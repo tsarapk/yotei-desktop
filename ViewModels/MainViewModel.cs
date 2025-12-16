@@ -575,8 +575,16 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void DeleteRole(RoleViewModel roleViewModel)
     {
+        if (!IsSuperUser)
+        {
+            _notificationService.ShowError("Только SuperUser может удалять роли");
+            return;
+        }
+        
+        var roleName = roleViewModel.Name;
         _yotei.Roles.Delete(roleViewModel.Model);
         Roles.Remove(roleViewModel);
+        _notificationService.ShowSuccess($"Роль '{roleName}' успешно удалена");
     }
 
     public void SyncGraphToRepository(Graph? graph = null)

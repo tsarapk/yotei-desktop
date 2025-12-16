@@ -153,15 +153,15 @@
                                         Padding="0,10"
                                         Margin="0,0,0,5">
                                     <StackPanel Spacing="8">
-                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                        <TextBox Text="{Binding Name, Mode=TwoWay}"
+                                                 Watermark="Имя роли" />
+                                        
+                                        <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="8">
                                             <TextBox Grid.Column="0"
-                                                     Text="{Binding Name, Mode=TwoWay}"
-                                                     Watermark="Имя роли" />
-                                            <TextBox Grid.Column="1"
                                                      Width="80"
                                                      Text="{Binding Strength, Mode=TwoWay}"
                                                      Watermark="Сила" />
-                                            <Button Grid.Column="2"
+                                            <Button Grid.Column="1"
                                                     Content="Удалить"
                                                     Command="{Binding DeleteCommand}"
                                                     Padding="12,6" />
