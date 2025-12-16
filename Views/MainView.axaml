@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:YoteiTasks.Views"
+             xmlns:viewModels="clr-namespace:YoteiTasks.ViewModels"
+             xmlns:models="clr-namespace:YoteiTasks.Models"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="YoteiTasks.Views.MainView"
+             x:CompileBindings="False">
+    <Design.DataContext>
+        <viewModels:MainViewModel />
+    </Design.DataContext>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Project panel -->
+        <Border Grid.Column="0" Background="#141414" BorderBrush="#3F3F46" BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Header and add button -->
+                <StackPanel Grid.Row="0" Margin="10">
+                    <TextBlock Text="Projects" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,10" />
+                    <Button Content="+ New Project" 
+                            Command="{Binding AddGraphCommand}"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,0,0,10" />
+                </StackPanel>
+
+                <!-- Projects list -->
+                <ListBox Grid.Row="1" 
+                         ItemsSource="{Binding Graphs}"
+                         SelectedItem="{Binding SelectedGraph, Mode=TwoWay}"
+                         Margin="10,0,10,10">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" 
+                                     Foreground="White" 
+                                     Padding="5"
+                                     VerticalAlignment="Center" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+
+        <!-- Main content area -->
+        <Grid Grid.Column="1" Background="#141414">
+            <!-- Rest of your main content here -->
+        </Grid>
+    </Grid>
+</UserControl>

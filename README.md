@@ -1,0 +1,1 @@
+Simple project manager with graph visualisation

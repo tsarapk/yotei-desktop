@@ -1,0 +1,332 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:YoteiTasks.Views"
+        xmlns:viewModels="clr-namespace:YoteiTasks.ViewModels"
+        xmlns:models="clr-namespace:YoteiTasks.Models"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="YoteiTasks.MainWindow"
+        x:DataType="viewModels:MainViewModel"
+        Title="YoteiTasks"
+        Width="1200" Height="800">
+    
+    <Grid>
+        <!-- User info bar at the top -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        
+        <Border Grid.Row="0" Grid.ColumnSpan="2" Background="#1E1E1E" Padding="10,5">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="15">
+                <TextBlock Text="{Binding CurrentActorName}" 
+                           VerticalAlignment="Center" 
+                           Foreground="White" />
+                <Button Content="Вход" 
+                        Command="{Binding ShowLoginCommand}"
+                        IsVisible="{Binding !IsLoggedIn}"
+                        Padding="15,5" />
+                <Button Content="Выход" 
+                        Command="{Binding LogoutCommand}"
+                        IsVisible="{Binding IsLoggedIn}"
+                        Padding="15,5" />
+            </StackPanel>
+        </Border>
+        
+        <!-- Main content area (не используется напрямую, оставлен для совместимости с кодом) -->
+        <ContentControl x:Name="MainContent" Grid.Row="1" Grid.ColumnSpan="2" />
+
+        <!-- Панель управления графами -->
+        <Border Grid.Row="1" Grid.Column="0" Background="#141414" BorderBrush="#3F3F46" BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Заголовок и кнопки -->
+                <StackPanel Grid.Row="0" Margin="10" Spacing="10">
+                    <TextBlock Text="Проекты" FontSize="18" FontWeight="Bold" Foreground="White" />
+                    <Button Content="+ Новый проект" 
+                            Command="{Binding AddGraphCommand}"
+                            IsEnabled="{Binding CanCreateProjects}"
+                            HorizontalAlignment="Stretch" />
+                    <Button Content="✏️ Редактировать" 
+                            Command="{Binding EditProjectCommand}"
+                            HorizontalAlignment="Stretch" />
+                    <Button Content="🗑️ Удалить проект" 
+                            Command="{Binding DeleteProjectCommand}"
+                            HorizontalAlignment="Stretch" />
+                </StackPanel>
+
+                <!-- Список проектов -->
+                <ListBox Grid.Row="1" 
+                         ItemsSource="{Binding Projects}"
+                         SelectedItem="{Binding SelectedProject}"
+                         Margin="10,0,10,10">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:Project">
+                            <TextBlock Text="{Binding Name}" 
+                                     Foreground="White" 
+                                     Padding="5"
+                                     VerticalAlignment="Center" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem:selected">
+                            <Setter Property="Background" Value="#0078D4" />
+                        </Style>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="Foreground" Value="White" />
+                        </Style>
+                        <Style Selector="ListBoxItem:pointerover">
+                            <Setter Property="Background" Value="#3F3F46" />
+                        </Style>
+                    </ListBox.Styles>
+                </ListBox>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" Grid.Column="1" Background="#141414">
+            <Grid.RowDefinitions >
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="360" />
+            </Grid.ColumnDefinitions>
+            
+            <!-- Панель инструментов -->
+            <Border Grid.Row="0" 
+                    Grid.ColumnSpan="2"
+                    Background="#141414"
+                    BorderBrush="#3F3F46"
+                    BorderThickness="0 0 0 1"
+                    Padding="10,5"
+                    IsVisible="{Binding SelectedGraph}"
+                    >
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Button Content="Проекты" 
+                            Command="{Binding ShowProjectsCommand}"
+                            Foreground="White" 
+                            VerticalAlignment="Center" />
+                    <Button Content ="Ресурсы" 
+                            Command="{Binding ShowResourcesCommand}"
+                            Foreground="White" 
+                            VerticalAlignment="Center" />
+                    <Button Content="Исполнители" 
+                            Command="{Binding ShowActorsCommand}"
+                            Foreground="White" 
+                            VerticalAlignment="Center" />        
+                    <Button Content="Роли" 
+                            Command="{Binding ShowRolesCommand}"
+                            Foreground="White" 
+                            VerticalAlignment="Center" />        
+                </StackPanel>
+            </Border>
+
+            <!-- Роли -->
+            <Border Grid.Row="1" Grid.ColumnSpan="2"
+                    Background="#141414"
+                    Padding="10"
+                    IsVisible="{Binding IsRolesTab}">
+                <StackPanel Spacing="10">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="Роли" FontSize="18" FontWeight="Bold" Foreground="White" />
+                        <Button Content="+ Добавить роль"
+                                Command="{Binding AddRoleCommand}"
+                                IsEnabled="{Binding CanCreateRoles}" />
+                    </StackPanel>
+
+                    <ListBox ItemsSource="{Binding Roles}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:RoleViewModel">
+                                <Border BorderBrush="#3F3F46" 
+                                        BorderThickness="0,0,0,1" 
+                                        Padding="0,10"
+                                        Margin="0,0,0,5">
+                                    <StackPanel Spacing="8">
+                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                            <TextBox Grid.Column="0"
+                                                     Text="{Binding Name, Mode=TwoWay}"
+                                                     Watermark="Имя роли" />
+                                            <TextBox Grid.Column="1"
+                                                     Width="80"
+                                                     Text="{Binding Strength, Mode=TwoWay}"
+                                                     Watermark="Сила" />
+                                            <Button Grid.Column="2"
+                                                    Content="Удалить"
+                                                    Command="{Binding DeleteCommand}"
+                                                    Padding="12,6" />
+                                        </Grid>
+
+                                        <ItemsControl ItemsSource="{Binding Privileges}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel Orientation="Horizontal" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="viewModels:RolePrivItemViewModel">
+                                                    <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                              Content="{Binding Name}"
+                                                              Margin="0,0,8,4" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+            <!-- Проекты (граф задач) -->
+            <views:GraphCanvas Grid.Row="1" Grid.Column="0"
+                               Graph="{Binding SelectedGraph}"
+                               DataContext="{Binding}"
+                               IsVisible="{Binding IsProjectsTab}" />
+
+            <Border Grid.RowSpan="2" Grid.Column="1"
+                    Background="#141414"
+                    Padding="2 0 0 0"
+                    BorderBrush="#3F3F46" 
+                    BorderThickness="1,0,0,0"
+                    IsVisible="{Binding TaskEditor}">
+                <views:TaskEditorView DataContext="{Binding TaskEditor}" />
+            </Border>
+
+            <!-- Ресурсы -->
+            <Border Grid.Row="1" Grid.ColumnSpan="2"
+                    Background="#141414"
+                    Padding="10"
+                    IsVisible="{Binding IsResourcesTab}">
+                <StackPanel Spacing="10">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="Ресурсы" FontSize="18" FontWeight="Bold" Foreground="White" />
+                        <Button Content="+ Добавить ресурс"
+                                Command="{Binding AddResourceCommand}" />
+                    </StackPanel>
+
+                    <ListBox ItemsSource="{Binding Resources}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:ResourceViewModel">
+                                <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,5">
+                                    <TextBox Grid.Column="0"
+                                             Margin="0,0,10,0"
+                                             Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             Watermark="Имя ресурса" />
+                                    <TextBox Grid.Column="1"
+                                             Width="80"
+                                             Margin="0,0,10,0"
+                                             Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <Button Grid.Column="2"
+                                            Content="Удалить"
+                                            Command="{Binding DeleteCommand}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+            <!-- Исполнители -->
+            <Border Grid.Row="1" Grid.ColumnSpan="2"
+                    Background="#141414"
+                    Padding="10"
+                    IsVisible="{Binding IsActorsTab}">
+                <StackPanel Spacing="10">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="Исполнители" FontSize="18" FontWeight="Bold" Foreground="White" />
+                        <Button Content="+ Добавить исполнителя"
+                                Command="{Binding AddActorCommand}"
+                                IsEnabled="{Binding CanCreateActors}" />
+                    </StackPanel>
+
+                    <ListBox ItemsSource="{Binding Actors}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:ActorViewModel">
+                                <Border BorderBrush="#3F3F46" 
+                                        BorderThickness="0,0,0,1" 
+                                        Padding="0,10"
+                                        Margin="0,0,0,5">
+                                    <StackPanel Spacing="8">
+                                        <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 Watermark="Имя исполнителя" />
+                                        
+                                        <TextBlock Text="Учётные данные для входа" 
+                                                   FontSize="12" 
+                                                   Foreground="#888" 
+                                                   Margin="0,8,0,4" />
+                                        
+                                        <Grid ColumnDefinitions="*,*,Auto,Auto" ColumnSpacing="8">
+                                            <TextBox Grid.Column="0"
+                                                     Text="{Binding Username, Mode=TwoWay}"
+                                                     Watermark="Имя пользователя" />
+                                            <TextBox Grid.Column="1"
+                                                     Text="{Binding Password, Mode=TwoWay}"
+                                                     Watermark="Пароль"
+                                                     PasswordChar="•" />
+                                            <Button Grid.Column="2"
+                                                    Content="Установить"
+                                                    Command="{Binding SetCredentialsCommand}"
+                                                    Padding="12,6" />
+                                            <Button Grid.Column="3"
+                                                    Content="Удалить"
+                                                    Command="{Binding DeleteCommand}"
+                                                    Padding="12,6" />
+                                        </Grid>
+                                        
+                                        <TextBlock Text="✓ Учётные данные установлены" 
+                                                   FontSize="11" 
+                                                   Foreground="#4CAF50"
+                                                   IsVisible="{Binding HasCredentials}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+        </Grid>
+
+        <!-- Login Popup -->
+        <Popup x:Name="LoginPopup"
+               IsOpen="{Binding IsLoginPopupOpen, Mode=TwoWay}"
+               Placement="Center"
+               IsLightDismissEnabled="True">
+            <!-- Child будет установлен в code-behind -->
+        </Popup>
+
+        <!-- Project Creation Popup -->
+        <Popup x:Name="ProjectCreationPopup"
+               IsOpen="{Binding IsProjectCreationPopupOpen, Mode=TwoWay}"
+               Placement="Center"
+               IsLightDismissEnabled="True">
+            <!-- Child будет установлен в code-behind -->
+        </Popup>
+
+        <!-- Project Editor Popup -->
+        <Popup x:Name="ProjectEditorPopup"
+               IsOpen="{Binding IsProjectEditorPopupOpen, Mode=TwoWay}"
+               Placement="Center"
+               IsLightDismissEnabled="True">
+            <!-- Child будет установлен в code-behind -->
+        </Popup>
+
+        <!-- Notification Panel -->
+        <views:NotificationPanel Grid.RowSpan="2" Grid.ColumnSpan="2"
+                                 IsHitTestVisible="False"
+                                 VerticalAlignment="Bottom"
+                                 HorizontalAlignment="Right"/>
+    </Grid>
+</Window>

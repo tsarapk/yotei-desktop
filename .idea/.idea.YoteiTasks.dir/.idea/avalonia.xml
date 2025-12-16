@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="MainWindow.axaml" value="YoteiTasks.csproj" />
+        <entry key="Views/GraphCanvas.axaml" value="YoteiTasks.csproj" />
+        <entry key="Views/LoginView.axaml" value="YoteiTasks.csproj" />
+        <entry key="Views/MainView.axaml" value="YoteiTasks.csproj" />
+        <entry key="Views/ProjectCreationPopupView.axaml" value="YoteiTasks.csproj" />
+        <entry key="Views/TaskEditorView.axaml" value="YoteiTasks.csproj" />
+      </map>
+    </option>
+  </component>
+</project>

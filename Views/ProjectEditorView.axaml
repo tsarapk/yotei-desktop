@@ -1,0 +1,159 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:YoteiTasks.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="600"
+             x:Class="YoteiTasks.Views.ProjectEditorView"
+             x:DataType="vm:ProjectEditorViewModel">
+    
+    <Border Background="#1E1E1E" 
+            BorderBrush="#3F3F46"
+            BorderThickness="1"
+            CornerRadius="8" 
+            Padding="30"
+            MinWidth="450"
+            MaxHeight="700">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="20">
+                <TextBlock Text="Редактирование проекта" 
+                           FontSize="20" 
+                           FontWeight="Bold" 
+                           Foreground="White"
+                           HorizontalAlignment="Center"/>
+                
+                <!-- Имя проекта -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Название проекта" 
+                               Foreground="White"
+                               FontSize="13"
+                               FontWeight="SemiBold"/>
+                    <TextBox Text="{Binding ProjectName, Mode=TwoWay}" 
+                             Watermark="Введите название проекта"
+                             FontSize="14"
+                             Padding="10,8" />
+                </StackPanel>
+                
+                <!-- Привязки Actor-Role -->
+                <StackPanel Spacing="12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0"
+                                   Text="Участники проекта" 
+                                   Foreground="White"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                        
+                        <Button Grid.Column="1"
+                                Content="+ Добавить участника" 
+                                Command="{Binding AddActorRoleCommand}"
+                                FontSize="12"
+                                Padding="12,6"/>
+                    </Grid>
+                    
+                    <!-- Список привязок -->
+                    <ItemsControl ItemsSource="{Binding ActorRoles}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#2A2A2A"
+                                        BorderBrush="#3F3F46"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Padding="15"
+                                        Margin="0,0,0,10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        
+                                        <!-- Actor -->
+                                        <StackPanel Grid.Column="0" Grid.Row="0" Spacing="5" Margin="0,0,10,0">
+                                            <TextBlock Text="Участник" 
+                                                       Foreground="#A0A0A0"
+                                                       FontSize="11"/>
+                                            <ComboBox ItemsSource="{Binding AvailableActors}"
+                                                      SelectedItem="{Binding SelectedActor, Mode=TwoWay}"
+                                                      HorizontalAlignment="Stretch"
+                                                      FontSize="13">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Name}"/>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+                                        
+                                        <!-- Role -->
+                                        <StackPanel Grid.Column="1" Grid.Row="0" Spacing="5" Margin="0,0,10,0">
+                                            <TextBlock Text="Роль" 
+                                                       Foreground="#A0A0A0"
+                                                       FontSize="11"/>
+                                            <ComboBox ItemsSource="{Binding AvailableRoles}"
+                                                      SelectedItem="{Binding SelectedRole, Mode=TwoWay}"
+                                                      HorizontalAlignment="Stretch"
+                                                      FontSize="13">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Name}"/>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+                                        
+                                        <!-- Remove button -->
+                                        <Button Grid.Column="2" Grid.Row="0"
+                                                Content="✕"
+                                                Command="{Binding RemoveCommand}"
+                                                VerticalAlignment="Bottom"
+                                                Width="32"
+                                                Height="32"
+                                                FontSize="14"
+                                                Foreground="#FF6B6B"
+                                                Background="Transparent"
+                                                BorderThickness="0"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    
+                    <!-- Подсказка, если нет участников -->
+                    <TextBlock Text="Добавьте участников проекта и назначьте им роли"
+                               Foreground="#808080"
+                               FontSize="12"
+                               FontStyle="Italic"
+                               TextAlignment="Center"
+                               Margin="0,10,0,0"
+                               IsVisible="{Binding !ActorRoles.Count}"/>
+                </StackPanel>
+                
+                <!-- Кнопки -->
+                <StackPanel Orientation="Horizontal" 
+                            HorizontalAlignment="Right" 
+                            Spacing="10"
+                            Margin="0,20,0,0">
+                    <Button Content="Отмена" 
+                            Command="{Binding CancelCommand}" 
+                            Padding="20,8"
+                            FontSize="13" />
+                    <Button Content="Сохранить изменения" 
+                            Command="{Binding SaveCommand}" 
+                            Classes="accent"
+                            Padding="20,8"
+                            FontSize="13" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

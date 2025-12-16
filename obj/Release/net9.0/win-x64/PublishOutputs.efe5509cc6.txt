@@ -1,0 +1,3 @@
+/media/vanya/SSD/Projects/Yotei/YoteiTasks/bin/Release/net9.0/win-x64/publish/YoteiTasks.pdb
+/media/vanya/SSD/Projects/Yotei/YoteiTasks/bin/Release/net9.0/win-x64/publish/Core.pdb
+/media/vanya/SSD/Projects/Yotei/YoteiTasks/bin/Release/net9.0/win-x64/publish/YoteiTasks.exe

@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:YoteiTasks.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+             x:Class="YoteiTasks.Views.LoginView"
+             x:DataType="vm:LoginViewModel">
+    
+    <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" 
+            CornerRadius="8" 
+            Padding="20">
+        <StackPanel Spacing="20" Width="300">
+            <TextBlock Text="Login" 
+                       FontSize="24" 
+                       FontWeight="Bold" 
+                       HorizontalAlignment="Center"/>
+            
+            <StackPanel Spacing="8">
+                <TextBlock Text="Username" />
+                <TextBox Text="{Binding Username, Mode=TwoWay}" 
+                         Watermark="Enter your username" />
+                
+                <TextBlock Text="Password" Margin="0,10,0,0" />
+                <TextBox Text="{Binding Password, Mode=TwoWay}" 
+                         Watermark="Enter your password" 
+                         PasswordChar="•" />
+                
+                <TextBlock Text="{Binding ErrorMessage}" 
+                           Foreground="Red" 
+                           TextWrapping="Wrap" 
+                           Margin="0,10,0,0" />
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal" 
+                        HorizontalAlignment="Right" 
+                        Spacing="10">
+                <Button Content="Cancel" 
+                        Command="{Binding CancelCommand}" 
+                        IsEnabled="{Binding !IsLoading}" />
+                <Button Content="Login" 
+                        Command="{Binding LoginCommand}" 
+                        IsEnabled="{Binding !IsLoading}" 
+                        IsDefault="True" />
+            </StackPanel>
+            
+            <ProgressBar IsIndeterminate="True" 
+                         IsVisible="{Binding IsLoading}" 
+                         Height="4" 
+                         Margin="0,10,0,0" />
+        </StackPanel>
+    </Border>
+</UserControl>

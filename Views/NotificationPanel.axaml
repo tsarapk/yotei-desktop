@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:services="clr-namespace:YoteiTasks.Services"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="600"
+             x:Class="YoteiTasks.Views.NotificationPanel"
+             x:DataType="services:NotificationService"
+             x:CompileBindings="False">
+    
+    <ItemsControl ItemsSource="{Binding Notifications}"
+                  VerticalAlignment="Bottom"
+                  HorizontalAlignment="Right"
+                  Margin="20">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel Spacing="10" />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        
+        <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="services:Notification">
+                <Border CornerRadius="8"
+                        Padding="16,12"
+                        MinWidth="300"
+                        MaxWidth="400"
+                        BoxShadow="0 4 12 0 #40000000">
+                    <Border.Styles>
+                        <Style Selector="Border">
+                            <Setter Property="Background" Value="#2196F3"/>
+                        </Style>
+                    </Border.Styles>
+                    
+                    <Grid ColumnDefinitions="Auto,*">
+                        <!-- Иконка -->
+                        <TextBlock Grid.Column="0"
+                                   Text="ℹ"
+                                   FontSize="20"
+                                   Foreground="White"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"/>
+                        
+                        <!-- Сообщение -->
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding Message}"
+                                   TextWrapping="Wrap"
+                                   Foreground="White"
+                                   FontSize="14"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>

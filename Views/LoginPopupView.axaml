@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:YoteiTasks.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+             x:Class="YoteiTasks.Views.LoginPopupView"
+             x:DataType="vm:LoginPopupViewModel">
+    
+    <Border Background="#1E1E1E" 
+            BorderBrush="#3F3F46"
+            BorderThickness="1"
+            CornerRadius="8" 
+            Padding="30"
+            MinWidth="350">
+        <StackPanel Spacing="20">
+            <TextBlock Text="Вход в систему" 
+                       FontSize="20" 
+                       FontWeight="Bold" 
+                       Foreground="White"
+                       HorizontalAlignment="Center"/>
+            
+            <StackPanel Spacing="12">
+                <TextBlock Text="Имя пользователя" 
+                           Foreground="White"
+                           FontSize="13"/>
+                <TextBox Text="{Binding Username, Mode=TwoWay}" 
+                         Watermark="Введите имя пользователя"
+                         FontSize="14"
+                         Padding="10,8" />
+                
+                <TextBlock Text="Пароль" 
+                           Foreground="White"
+                           FontSize="13"
+                           Margin="0,8,0,0" />
+                <TextBox Text="{Binding Password, Mode=TwoWay}" 
+                         Watermark="Введите пароль" 
+                         PasswordChar="•"
+                         FontSize="14"
+                         Padding="10,8" />
+                
+                <TextBlock Text="{Binding ErrorMessage}" 
+                           Foreground="#FF6B6B" 
+                           TextWrapping="Wrap" 
+                           FontSize="12"
+                           IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                           Margin="0,4,0,0" />
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal" 
+                        HorizontalAlignment="Right" 
+                        Spacing="10"
+                        Margin="0,10,0,0">
+                <Button Content="Отмена" 
+                        Command="{Binding CancelCommand}" 
+                        IsEnabled="{Binding !IsLoading}"
+                        Padding="20,8"
+                        FontSize="13" />
+                <Button Content="Войти" 
+                        Command="{Binding LoginCommand}" 
+                        IsEnabled="{Binding !IsLoading}"
+                        Classes="accent"
+                        Padding="20,8"
+                        FontSize="13" />
+            </StackPanel>
+            
+            <ProgressBar IsIndeterminate="True" 
+                         IsVisible="{Binding IsLoading}" 
+                         Height="3" 
+                         Margin="0,10,0,0" />
+        </StackPanel>
+    </Border>
+</UserControl>
