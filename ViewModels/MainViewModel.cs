@@ -44,6 +44,8 @@ public class MainViewModel : INotifyPropertyChanged
     private bool _isLoginPopupOpen;
     private bool _isProjectCreationPopupOpen;
     private bool _isProjectEditorPopupOpen;
+    private bool _isResourceReportPopupOpen;
+    private ResourceReportViewModel? _resourceReportViewModel;
     private Actor? _currentActor;
     private ProjectPermissions _currentPermissions = new();
 
@@ -179,6 +181,18 @@ public class MainViewModel : INotifyPropertyChanged
     {
         get => _isProjectEditorPopupOpen;
         set => SetProperty(ref _isProjectEditorPopupOpen, value);
+    }
+
+    public bool IsResourceReportPopupOpen
+    {
+        get => _isResourceReportPopupOpen;
+        set => SetProperty(ref _isResourceReportPopupOpen, value);
+    }
+
+    public ResourceReportViewModel? ResourceReportViewModel
+    {
+        get => _resourceReportViewModel;
+        set => SetProperty(ref _resourceReportViewModel, value);
     }
 
     public Actor? CurrentActor
@@ -322,7 +336,7 @@ public class MainViewModel : INotifyPropertyChanged
         var resources = new ObservableCollection<ResourceViewModel>();
         foreach (var resource in _yotei.Resources.GetAll())
         {
-            resources.Add(new ResourceViewModel(resource, DeleteResource));
+            resources.Add(new ResourceViewModel(resource, DeleteResource, ShowResourceReport));
         }
         Resources = resources;
 
@@ -505,13 +519,50 @@ public class MainViewModel : INotifyPropertyChanged
     private void AddResource()
     {
         var resource = _yotei.Resources.Create();
-        Resources.Add(new ResourceViewModel(resource, DeleteResource));
+        Resources.Add(new ResourceViewModel(resource, DeleteResource, ShowResourceReport));
     }
 
     private void DeleteResource(ResourceViewModel resourceViewModel)
     {
         _yotei.Resources.Delete(resourceViewModel.Model);
         Resources.Remove(resourceViewModel);
+    }
+    
+    private void ShowResourceReport(ResourceViewModel resourceViewModel)
+    {
+        var report = GenerateResourceReport(resourceViewModel.Model);
+        var reportViewModel = new ResourceReportViewModel(report, () => IsResourceReportPopupOpen = false);
+        ResourceReportViewModel = reportViewModel;
+        IsResourceReportPopupOpen = true;
+    }
+    
+    private ResourceUsageReport GenerateResourceReport(Resource resource)
+    {
+        var report = new ResourceUsageReport(resource);
+        
+        // Iterate through all graphs and nodes to find resource usages
+        foreach (var graph in _graphs)
+        {
+            foreach (var node in graph.Nodes)
+            {
+                foreach (var resourceUsage in node.ResourceUsages)
+                {
+                    if (resourceUsage.Resource.Id == resource.Id)
+                    {
+                        report.TotalAllocated += resourceUsage.Amount;
+                        report.TaskAllocations.Add(new TaskResourceAllocation
+                        {
+                            TaskName = node.Label,
+                            TaskId = node.Id,
+                            Amount = resourceUsage.Amount,
+                            Percentage = resource.Value > 0 ? (resourceUsage.Amount / resource.Value) * 100 : 0
+                        });
+                    }
+                }
+            }
+        }
+        
+        return report;
     }
 
     private void AddActor()
@@ -701,7 +752,7 @@ public class MainViewModel : INotifyPropertyChanged
             _resources.Clear();
             foreach (var resource in loadedResources)
             {
-                _resources.Add(new ResourceViewModel(resource, DeleteResource));
+                _resources.Add(new ResourceViewModel(resource, DeleteResource, ShowResourceReport));
             }
 
             

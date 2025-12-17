@@ -219,18 +219,21 @@
                     <ListBox ItemsSource="{Binding Resources}">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="viewModels:ResourceViewModel">
-                                <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,5">
+                                <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,0,0,5" ColumnSpacing="10">
                                     <TextBox Grid.Column="0"
-                                             Margin="0,0,10,0"
                                              Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              Watermark="Имя ресурса" />
                                     <TextBox Grid.Column="1"
                                              Width="80"
-                                             Margin="0,0,10,0"
                                              Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                     <Button Grid.Column="2"
+                                            Content="📊 Отчёт"
+                                            Command="{Binding ShowReportCommand}"
+                                            Padding="10,5" />
+                                    <Button Grid.Column="3"
                                             Content="Удалить"
-                                            Command="{Binding DeleteCommand}" />
+                                            Command="{Binding DeleteCommand}"
+                                            Padding="10,5" />
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -318,6 +321,14 @@
         <!-- Project Editor Popup -->
         <Popup x:Name="ProjectEditorPopup"
                IsOpen="{Binding IsProjectEditorPopupOpen, Mode=TwoWay}"
+               Placement="Center"
+               IsLightDismissEnabled="True">
+            <!-- Child будет установлен в code-behind -->
+        </Popup>
+
+        <!-- Resource Report Popup -->
+        <Popup x:Name="ResourceReportPopup"
+               IsOpen="{Binding IsResourceReportPopupOpen, Mode=TwoWay}"
                Placement="Center"
                IsLightDismissEnabled="True">
             <!-- Child будет установлен в code-behind -->

@@ -10,14 +10,18 @@ public class ResourceViewModel : INotifyPropertyChanged
 {
     private readonly Resource _resource;
     private readonly Action<ResourceViewModel>? _deleteCallback;
+    private readonly Action<ResourceViewModel>? _showReportCallback;
 
     public ICommand DeleteCommand { get; }
+    public ICommand ShowReportCommand { get; }
 
-    public ResourceViewModel(Resource resource, Action<ResourceViewModel>? deleteCallback = null)
+    public ResourceViewModel(Resource resource, Action<ResourceViewModel>? deleteCallback = null, Action<ResourceViewModel>? showReportCallback = null)
     {
         _resource = resource;
         _deleteCallback = deleteCallback;
+        _showReportCallback = showReportCallback;
         DeleteCommand = new RelayCommand(_ => _deleteCallback?.Invoke(this));
+        ShowReportCommand = new RelayCommand(_ => _showReportCallback?.Invoke(this));
     }
 
     public Resource Model => _resource;

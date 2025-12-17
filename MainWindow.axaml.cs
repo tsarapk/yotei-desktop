@@ -21,9 +21,11 @@ public partial class MainWindow : Window
     private readonly Popup? _loginPopup;
     private readonly Popup? _projectCreationPopup;
     private readonly Popup? _projectEditorPopup;
+    private readonly Popup? _resourceReportPopup;
     private LoginPopupView? _loginPopupView;
     private ProjectCreationPopupView? _projectCreationPopupView;
     private ProjectEditorView? _projectEditorView;
+    private ResourceReportView? _resourceReportView;
     private MainViewModel? _mainViewModel;
 
     public MainWindow()
@@ -35,6 +37,7 @@ public partial class MainWindow : Window
         _loginPopup = this.FindControl<Popup>("LoginPopup");
         _projectCreationPopup = this.FindControl<Popup>("ProjectCreationPopup");
         _projectEditorPopup = this.FindControl<Popup>("ProjectEditorPopup");
+        _resourceReportPopup = this.FindControl<Popup>("ResourceReportPopup");
 
         this.KeyDown += OnKeyDown;
         
@@ -50,6 +53,7 @@ public partial class MainWindow : Window
             SetupLoginPopup();
             SetupProjectCreationPopup();
             SetupProjectEditorPopup();
+            SetupResourceReportPopup();
         }
     }
     
@@ -145,6 +149,31 @@ public partial class MainWindow : Window
             }
             
             _projectEditorPopup.Child = _projectEditorView;
+        }
+    }
+    
+    private void SetupResourceReportPopup()
+    {
+        if (_resourceReportPopup == null || _mainViewModel == null)
+            return;
+        
+        _mainViewModel.PropertyChanged += OnResourceReportPopupChanged;
+    }
+    
+    private void OnResourceReportPopupChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainViewModel.IsResourceReportPopupOpen) && 
+            _mainViewModel != null &&
+            _mainViewModel.IsResourceReportPopupOpen &&
+            _mainViewModel.ResourceReportViewModel != null &&
+            _resourceReportPopup != null)
+        {
+            _resourceReportView = new ResourceReportView
+            {
+                DataContext = _mainViewModel.ResourceReportViewModel
+            };
+            
+            _resourceReportPopup.Child = _resourceReportView;
         }
     }
 

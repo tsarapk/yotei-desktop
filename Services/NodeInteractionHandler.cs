@@ -45,14 +45,12 @@ public class NodeInteractionHandler
     {
         _onNodeRightClick = handler;
     }
-
     public void AttachToNode(GraphNode node, Border border)
     {
         border.PointerPressed += (s, e) => OnNodePressed(node, e);
         border.PointerMoved += (s, e) => OnNodeMoved(node, e);
         border.PointerReleased += (s, e) => OnNodeReleased(node, e);
     }
-
     private void OnNodePressed(GraphNode node, PointerPressedEventArgs e)
     {
         if (e.GetCurrentPoint(_canvas).Properties.IsLeftButtonPressed)
