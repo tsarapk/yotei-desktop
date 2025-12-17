@@ -6,10 +6,6 @@ using YoteiTasks.Models;
 using YoteiTasks.ViewModels;
 
 namespace YoteiTasks.Services;
-
-
-
-
 public class NodeInteractionHandler
 {
     private readonly Canvas _canvas;

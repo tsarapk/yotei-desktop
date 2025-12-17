@@ -113,8 +113,12 @@
                     IsVisible="{Binding SelectedGraph}"
                     >
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <Button Content="Проекты" 
+                    <Button Content="Холст" 
                             Command="{Binding ShowProjectsCommand}"
+                            Foreground="White" 
+                            VerticalAlignment="Center" />
+                    <Button Content="Список" 
+                            Command="{Binding ShowTaskListCommand}"
                             Foreground="White" 
                             VerticalAlignment="Center" />
                     <Button Content ="Ресурсы" 
@@ -329,6 +333,14 @@
         <!-- Resource Report Popup -->
         <Popup x:Name="ResourceReportPopup"
                IsOpen="{Binding IsResourceReportPopupOpen, Mode=TwoWay}"
+               Placement="Center"
+               IsLightDismissEnabled="True">
+            <!-- Child будет установлен в code-behind -->
+        </Popup>
+
+        <!-- Task List Popup -->
+        <Popup x:Name="TaskListPopup"
+               IsOpen="{Binding IsTaskListPopupOpen, Mode=TwoWay}"
                Placement="Center"
                IsLightDismissEnabled="True">
             <!-- Child будет установлен в code-behind -->

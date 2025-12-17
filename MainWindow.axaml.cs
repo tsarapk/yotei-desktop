@@ -22,10 +22,12 @@ public partial class MainWindow : Window
     private readonly Popup? _projectCreationPopup;
     private readonly Popup? _projectEditorPopup;
     private readonly Popup? _resourceReportPopup;
+    private readonly Popup? _taskListPopup;
     private LoginPopupView? _loginPopupView;
     private ProjectCreationPopupView? _projectCreationPopupView;
     private ProjectEditorView? _projectEditorView;
     private ResourceReportView? _resourceReportView;
+    private TaskListView? _taskListView;
     private MainViewModel? _mainViewModel;
 
     public MainWindow()
@@ -38,6 +40,7 @@ public partial class MainWindow : Window
         _projectCreationPopup = this.FindControl<Popup>("ProjectCreationPopup");
         _projectEditorPopup = this.FindControl<Popup>("ProjectEditorPopup");
         _resourceReportPopup = this.FindControl<Popup>("ResourceReportPopup");
+        _taskListPopup = this.FindControl<Popup>("TaskListPopup");
 
         this.KeyDown += OnKeyDown;
         
@@ -54,6 +57,7 @@ public partial class MainWindow : Window
             SetupProjectCreationPopup();
             SetupProjectEditorPopup();
             SetupResourceReportPopup();
+            SetupTaskListPopup();
         }
     }
     
@@ -174,6 +178,31 @@ public partial class MainWindow : Window
             };
             
             _resourceReportPopup.Child = _resourceReportView;
+        }
+    }
+    
+    private void SetupTaskListPopup()
+    {
+        if (_taskListPopup == null || _mainViewModel == null)
+            return;
+        
+        _mainViewModel.PropertyChanged += OnTaskListPopupChanged;
+    }
+    
+    private void OnTaskListPopupChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainViewModel.IsTaskListPopupOpen) && 
+            _mainViewModel != null &&
+            _mainViewModel.IsTaskListPopupOpen &&
+            _mainViewModel.TaskListViewModel != null &&
+            _taskListPopup != null)
+        {
+            _taskListView = new TaskListView
+            {
+                DataContext = _mainViewModel.TaskListViewModel
+            };
+            
+            _taskListPopup.Child = _taskListView;
         }
     }
 

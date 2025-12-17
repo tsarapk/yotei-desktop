@@ -45,7 +45,9 @@ public class MainViewModel : INotifyPropertyChanged
     private bool _isProjectCreationPopupOpen;
     private bool _isProjectEditorPopupOpen;
     private bool _isResourceReportPopupOpen;
+    private bool _isTaskListPopupOpen;
     private ResourceReportViewModel? _resourceReportViewModel;
+    private TaskListViewModel? _taskListViewModel;
     private Actor? _currentActor;
     private ProjectPermissions _currentPermissions = new();
 
@@ -195,6 +197,18 @@ public class MainViewModel : INotifyPropertyChanged
         set => SetProperty(ref _resourceReportViewModel, value);
     }
 
+    public bool IsTaskListPopupOpen
+    {
+        get => _isTaskListPopupOpen;
+        set => SetProperty(ref _isTaskListPopupOpen, value);
+    }
+
+    public TaskListViewModel? TaskListViewModel
+    {
+        get => _taskListViewModel;
+        set => SetProperty(ref _taskListViewModel, value);
+    }
+
     public Actor? CurrentActor
     {
         get => _currentActor;
@@ -257,6 +271,7 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand AddGraphCommand { get; }
     public ICommand SaveCommand { get; }
     public ICommand ShowProjectsCommand { get; }
+    public ICommand ShowTaskListCommand { get; }
     public ICommand ShowResourcesCommand { get; }
     public ICommand ShowActorsCommand { get; }
     public ICommand ShowRolesCommand { get; }
@@ -287,6 +302,7 @@ public class MainViewModel : INotifyPropertyChanged
         AddGraphCommand = new RelayCommand(_ => AddGraph());
         SaveCommand = new RelayCommand(_ => Save());
         ShowProjectsCommand = new RelayCommand(_ => SelectedTab = ToolbarTab.Projects);
+        ShowTaskListCommand = new RelayCommand(_ => ShowTaskList());
         ShowResourcesCommand = new RelayCommand(_ => SelectedTab = ToolbarTab.Resources);
         ShowActorsCommand = new RelayCommand(_ => SelectedTab = ToolbarTab.Actors);
         ShowRolesCommand = new RelayCommand(_ => SelectedTab = ToolbarTab.Roles);
@@ -592,6 +608,26 @@ public class MainViewModel : INotifyPropertyChanged
     private void ShowLogin()
     {
         IsLoginPopupOpen = true;
+    }
+
+    private void ShowTaskList()
+    {
+        if (_selectedGraph == null)
+            return;
+
+        var taskListViewModel = new TaskListViewModel(
+            _selectedGraph, 
+            _actors.Select(a => a.Model),
+            () => IsTaskListPopupOpen = false,
+            SelectTaskFromList);
+        
+        TaskListViewModel = taskListViewModel;
+        IsTaskListPopupOpen = true;
+    }
+
+    private void SelectTaskFromList(GraphNode node)
+    {
+        SelectedNode = node;
     }
 
     public void OnLoginCompleted(Actor? actor)
