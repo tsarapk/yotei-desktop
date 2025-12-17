@@ -1,0 +1,286 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:YoteiTasks.ViewModels"
+             xmlns:models="clr-namespace:YoteiTasks.Models"
+             xmlns:core="clr-namespace:YoteiLib.Core;assembly=Core"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
+             x:Class="YoteiTasks.Views.TaskListView"
+             x:DataType="viewModels:TaskListViewModel"
+             Background="#1E1E1E"
+             Padding="20">
+    
+    <Border Background="#252526" 
+            BorderBrush="#3F3F46" 
+            BorderThickness="1" 
+            CornerRadius="8"
+            Padding="20">
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
+            
+            <!-- Header -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,20">
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Список задач" 
+                               FontSize="20" 
+                               FontWeight="Bold" 
+                               Foreground="White" />
+                    <TextBlock Foreground="#888" FontSize="12" Margin="0,5,0,0">
+                        <Run Text="Показано:" />
+                        <Run Text="{Binding FilteredTasksCount}" FontWeight="SemiBold" />
+                        <Run Text="из" />
+                        <Run Text="{Binding TotalTasksCount}" FontWeight="SemiBold" />
+                    </TextBlock>
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Content="✕"
+                        Command="{Binding CloseCommand}"
+                        Width="32"
+                        Height="32"
+                        FontSize="16"
+                        VerticalAlignment="Top" />
+            </Grid>
+
+            <!-- Filters -->
+            <Border Grid.Row="1" 
+                    Background="#2D2D30" 
+                    Padding="15" 
+                    CornerRadius="6"
+                    Margin="0,0,0,15">
+                <StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0"
+                                   Text="Фильтры и сортировка" 
+                                   FontSize="14" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="White"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1"
+                                Content="Очистить фильтры"
+                                Command="{Binding ClearFiltersCommand}"
+                                IsVisible="{Binding HasFilters}"
+                                Padding="10,5"
+                                FontSize="11" />
+                    </Grid>
+
+                    <!-- Search -->
+                    <TextBox Text="{Binding SearchText, Mode=TwoWay}"
+                             Watermark="🔍 Поиск по названию или описанию..."
+                             Background="#3F3F46"
+                             Foreground="White" />
+
+                    <!-- Filter Row 1 -->
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                        <!-- Status Filter -->
+                        <StackPanel Grid.Column="0" Spacing="5">
+                            <TextBlock Text="Статус" 
+                                       FontSize="11" 
+                                       Foreground="#888" />
+                            <TextBox Text="{Binding StatusFilter, Mode=TwoWay}"
+                                     Watermark="Фильтр по статусу..."
+                                     HorizontalAlignment="Stretch" />
+                        </StackPanel>
+
+                        <!-- Priority Filter -->
+                        <StackPanel Grid.Column="1" Spacing="5">
+                            <TextBlock Text="Приоритет" 
+                                       FontSize="11" 
+                                       Foreground="#888" />
+                            <NumericUpDown Value="{Binding SelectedPriority, Mode=TwoWay}"
+                                           Minimum="0"
+                                           Maximum="10"
+                                           Watermark="Любой"
+                                           HorizontalAlignment="Stretch" />
+                        </StackPanel>
+
+                        <!-- Performer Filter -->
+                        <StackPanel Grid.Column="2" Spacing="5">
+                            <TextBlock Text="Исполнитель" 
+                                       FontSize="11" 
+                                       Foreground="#888" />
+                            <ComboBox ItemsSource="{Binding AvailableActors}"
+                                      SelectedItem="{Binding SelectedPerformer, Mode=TwoWay}"
+                                      HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Filter Row 2: Dates and Sorting -->
+                    <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
+                        <!-- Date From -->
+                        <StackPanel Grid.Column="0" Spacing="5">
+                            <TextBlock Text="Дата с" 
+                                       FontSize="11" 
+                                       Foreground="#888" />
+                            <DatePicker SelectedDate="{Binding DateFrom, Mode=TwoWay}"
+                                        HorizontalAlignment="Stretch" />
+                        </StackPanel>
+
+                        <!-- Date To -->
+                        <StackPanel Grid.Column="1" Spacing="5">
+                            <TextBlock Text="Дата по" 
+                                       FontSize="11" 
+                                       Foreground="#888" />
+                            <DatePicker SelectedDate="{Binding DateTo, Mode=TwoWay}"
+                                        HorizontalAlignment="Stretch" />
+                        </StackPanel>
+
+                        <!-- Sort By -->
+                        <StackPanel Grid.Column="2" Spacing="5">
+                            <TextBlock Text="Сортировка" 
+                                       FontSize="11" 
+                                       Foreground="#888" />
+                            <ComboBox SelectedItem="{Binding SortBy, Mode=TwoWay}"
+                                      HorizontalAlignment="Stretch">
+                                <ComboBox.Items>
+                                    <models:TaskSortBy>Name</models:TaskSortBy>
+                                    <models:TaskSortBy>Status</models:TaskSortBy>
+                                    <models:TaskSortBy>Priority</models:TaskSortBy>
+                                    <models:TaskSortBy>Deadline</models:TaskSortBy>
+                                </ComboBox.Items>
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Sort Direction -->
+                        <StackPanel Grid.Column="3" Spacing="5">
+                            <TextBlock Text="Направление" 
+                                       FontSize="11" 
+                                       Foreground="#888" />
+                            <ComboBox SelectedItem="{Binding SortDirection, Mode=TwoWay}"
+                                      HorizontalAlignment="Stretch">
+                                <ComboBox.Items>
+                                    <models:SortDirection>Ascending</models:SortDirection>
+                                    <models:SortDirection>Descending</models:SortDirection>
+                                </ComboBox.Items>
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Task List -->
+            <ScrollViewer Grid.Row="2">
+                <StackPanel>
+                    <ItemsControl ItemsSource="{Binding FilteredTasks}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:TaskListItemViewModel">
+                                <Border Background="#2D2D30" 
+                                        Padding="15" 
+                                        Margin="0,0,0,10"
+                                        CornerRadius="6"
+                                        Cursor="Hand">
+                                    <Border.Styles>
+                                        <Style Selector="Border:pointerover">
+                                            <Setter Property="Background" Value="#3F3F46" />
+                                        </Style>
+                                    </Border.Styles>
+                                    
+                                    <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="15"
+                                          PointerPressed="OnTaskItemClicked">
+                                        
+                                        <!-- Task Info -->
+                                        <StackPanel Grid.Column="0" Spacing="5">
+                                            <TextBlock Text="{Binding Name}" 
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="White"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Payload}" 
+                                                       FontSize="11"
+                                                       Foreground="#888"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       MaxLines="2" />
+                                        </StackPanel>
+
+                                        <!-- Status -->
+                                        <Border Grid.Column="1"
+                                                Background="#3F3F46"
+                                                Padding="8,4"
+                                                CornerRadius="4"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding StatusText}" 
+                                                       FontSize="11"
+                                                       Foreground="White" />
+                                        </Border>
+
+                                        <!-- Priority -->
+                                        <Border Grid.Column="2"
+                                                Background="#FF9800"
+                                                Padding="8,4"
+                                                CornerRadius="4"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Priority}" 
+                                                       FontSize="12"
+                                                       FontWeight="Bold"
+                                                       Foreground="White" />
+                                        </Border>
+
+                                        <!-- Performer -->
+                                        <StackPanel Grid.Column="3" 
+                                                    Spacing="2"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock Text="Исполнитель" 
+                                                       FontSize="9"
+                                                       Foreground="#666" />
+                                            <TextBlock Text="{Binding PerformerText}" 
+                                                       FontSize="11"
+                                                       Foreground="#888" />
+                                        </StackPanel>
+
+                                        <!-- Deadline -->
+                                        <StackPanel Grid.Column="4" 
+                                                    Spacing="2"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock Text="Срок" 
+                                                       FontSize="9"
+                                                       Foreground="#666" />
+                                            <TextBlock Text="{Binding DeadlineText}" 
+                                                       FontSize="11"
+                                                       Foreground="#888" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Empty State -->
+                    <Border Background="#2D2D30" 
+                            Padding="40" 
+                            CornerRadius="6"
+                            IsVisible="{Binding !FilteredTasksCount}">
+                        <StackPanel Spacing="10" HorizontalAlignment="Center">
+                            <TextBlock Text="📋" 
+                                       FontSize="48"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="Задачи не найдены" 
+                                       FontSize="14" 
+                                       FontWeight="SemiBold"
+                                       Foreground="White"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="Попробуйте изменить параметры фильтрации" 
+                                       FontSize="11" 
+                                       Foreground="#888"
+                                       HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,0 +1,199 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:YoteiTasks.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="500"
+             x:Class="YoteiTasks.Views.ResourceReportView"
+             x:DataType="viewModels:ResourceReportViewModel"
+             Background="#1E1E1E"
+             Padding="20">
+    
+    <Border Background="#252526" 
+            BorderBrush="#3F3F46" 
+            BorderThickness="1" 
+            CornerRadius="8"
+            Padding="20">
+        <ScrollViewer>
+            <StackPanel Spacing="20">
+                <!-- Header -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Отчёт по загрузке ресурса" 
+                                   FontSize="20" 
+                                   FontWeight="Bold" 
+                                   Foreground="White" />
+                        <TextBlock Text="{Binding ResourceName}" 
+                                   FontSize="16" 
+                                   Foreground="#0078D4"
+                                   Margin="0,5,0,0" />
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Content="✕"
+                            Command="{Binding CloseCommand}"
+                            Width="32"
+                            Height="32"
+                            FontSize="16"
+                            VerticalAlignment="Top" />
+                </Grid>
+
+                <Separator Background="#3F3F46" />
+
+                <!-- Summary Statistics -->
+                <StackPanel Spacing="15">
+                    <TextBlock Text="Общая статистика" 
+                               FontSize="14" 
+                               FontWeight="SemiBold" 
+                               Foreground="White" />
+                    
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="15">
+                        <!-- Total Available -->
+                        <Border Grid.Column="0" 
+                                Background="#2D2D30" 
+                                Padding="15" 
+                                CornerRadius="6">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Доступно всего" 
+                                           FontSize="11" 
+                                           Foreground="#888" />
+                                <TextBlock Text="{Binding TotalAvailable}" 
+                                           FontSize="20" 
+                                           FontWeight="Bold" 
+                                           Foreground="#4CAF50" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Total Allocated -->
+                        <Border Grid.Column="1" 
+                                Background="#2D2D30" 
+                                Padding="15" 
+                                CornerRadius="6">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Выделено" 
+                                           FontSize="11" 
+                                           Foreground="#888" />
+                                <TextBlock Text="{Binding TotalAllocated}" 
+                                           FontSize="20" 
+                                           FontWeight="Bold" 
+                                           Foreground="#FF9800" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Remaining -->
+                        <Border Grid.Column="2" 
+                                Background="#2D2D30" 
+                                Padding="15" 
+                                CornerRadius="6">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Остаток" 
+                                           FontSize="11" 
+                                           Foreground="#888" />
+                                <TextBlock Text="{Binding RemainingAmount}" 
+                                           FontSize="20" 
+                                           FontWeight="Bold" 
+                                           Foreground="#2196F3" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Usage Percentage -->
+                    <Border Background="#2D2D30" 
+                            Padding="15" 
+                            CornerRadius="6">
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0"
+                                           Text="Процент использования" 
+                                           FontSize="12" 
+                                           Foreground="#888"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding UsageStatus}" 
+                                           FontSize="11" 
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center" />
+                            </Grid>
+                            
+                            <ProgressBar Value="{Binding UsagePercentage}" 
+                                         Maximum="100" 
+                                         Height="8"
+                                         Foreground="#FF9800"
+                                         Background="#3F3F46" />
+                            
+                            <TextBlock Text="{Binding UsagePercentage, StringFormat='{}{0:F1}%'}" 
+                                       FontSize="18" 
+                                       FontWeight="Bold" 
+                                       Foreground="White"
+                                       HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <Separator Background="#3F3F46" />
+
+                <!-- Task Allocations -->
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Распределение по задачам" 
+                               FontSize="14" 
+                               FontWeight="SemiBold" 
+                               Foreground="White" />
+                    
+                    <ItemsControl ItemsSource="{Binding TaskAllocations}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:TaskAllocationViewModel">
+                                <Border Background="#2D2D30" 
+                                        Padding="12" 
+                                        Margin="0,0,0,8"
+                                        CornerRadius="4">
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="15">
+                                        <TextBlock Grid.Column="0" 
+                                                   Text="{Binding TaskName}" 
+                                                   Foreground="White"
+                                                   VerticalAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        
+                                        <TextBlock Grid.Column="1" 
+                                                   Text="{Binding Amount}" 
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#FF9800"
+                                                   VerticalAlignment="Center"
+                                                   Width="60"
+                                                   TextAlignment="Right" />
+                                        
+                                        <Border Grid.Column="2"
+                                                Background="#3F3F46"
+                                                Padding="8,4"
+                                                CornerRadius="4"
+                                                MinWidth="60">
+                                            <TextBlock Text="{Binding PercentageText}" 
+                                                       FontSize="11"
+                                                       Foreground="#888"
+                                                       HorizontalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Empty State -->
+                    <Border Background="#2D2D30" 
+                            Padding="30" 
+                            CornerRadius="4"
+                            IsVisible="{Binding !TaskAllocations.Count}">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <TextBlock Text="📊" 
+                                       FontSize="32"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="Ресурс не используется в задачах" 
+                                       FontSize="12" 
+                                       Foreground="#888"
+                                       HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

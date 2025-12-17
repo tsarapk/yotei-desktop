@@ -1,0 +1,167 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:YoteiTasks.ViewModels"
+             xmlns:models="clr-namespace:YoteiTasks.Models"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="600"
+             x:Class="YoteiTasks.Views.RecurringTaskConfigView"
+             x:DataType="viewModels:RecurringTaskConfigViewModel"
+             Background="#1E1E1E"
+             Padding="20">
+    
+    <Border Background="#252526" 
+            BorderBrush="#3F3F46" 
+            BorderThickness="1" 
+            CornerRadius="8"
+            Padding="20"
+            MaxWidth="500">
+        <StackPanel Spacing="20">
+            
+            <!-- Header -->
+            <StackPanel Spacing="5">
+                <TextBlock Text="⏰ Настройка повторений и уведомлений" 
+                           FontSize="18" 
+                           FontWeight="Bold" 
+                           Foreground="White" />
+                <TextBlock Text="{Binding TaskName}" 
+                           FontSize="14" 
+                           Foreground="#888" />
+            </StackPanel>
+
+            <Separator Background="#3F3F46" />
+
+            <!-- Recurrence Type -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="Тип повторения" 
+                           FontSize="13" 
+                           FontWeight="SemiBold"
+                           Foreground="White" />
+                <ComboBox SelectedItem="{Binding RecurrenceType, Mode=TwoWay}"
+                          HorizontalAlignment="Stretch">
+                    <ComboBox.Items>
+                        <models:RecurrenceType>None</models:RecurrenceType>
+                        <models:RecurrenceType>Minutes</models:RecurrenceType>
+                        <models:RecurrenceType>Hours</models:RecurrenceType>
+                        <models:RecurrenceType>Daily</models:RecurrenceType>
+                        <models:RecurrenceType>Weekly</models:RecurrenceType>
+                        <models:RecurrenceType>Monthly</models:RecurrenceType>
+                    </ComboBox.Items>
+                </ComboBox>
+                <TextBlock FontSize="11" Foreground="#666">
+                    <Run Text="• None - не повторяется" />
+                    <LineBreak />
+                    <Run Text="• Minutes/Hours - каждые N минут/часов" />
+                    <LineBreak />
+                    <Run Text="• Daily/Weekly/Monthly - каждый день/неделю/месяц" />
+                </TextBlock>
+            </StackPanel>
+
+            <!-- Interval -->
+            <StackPanel Spacing="8" IsVisible="{Binding ShowInterval}">
+                <TextBlock Text="{Binding IntervalLabel}" 
+                           FontSize="13" 
+                           FontWeight="SemiBold"
+                           Foreground="White" />
+                <NumericUpDown Value="{Binding Interval, Mode=TwoWay}"
+                               Minimum="1"
+                               Maximum="999"
+                               HorizontalAlignment="Stretch" />
+            </StackPanel>
+
+            <Separator Background="#3F3F46" IsVisible="{Binding IsRecurring}" />
+
+            <!-- Auto Reset -->
+            <StackPanel Spacing="8" IsVisible="{Binding IsRecurring}">
+                <CheckBox IsChecked="{Binding AutoReset, Mode=TwoWay}"
+                          Content="Автоматически сбрасывать выполнение"
+                          Foreground="White" />
+                <TextBlock FontSize="11" Foreground="#666" TextWrapping="Wrap">
+                    Если включено, задача будет автоматически возвращаться в невыполненное состояние через указанное время после выполнения
+                </TextBlock>
+            </StackPanel>
+
+            <!-- Auto Reset Delay -->
+            <StackPanel Spacing="8" IsVisible="{Binding ShowAutoResetDelay}">
+                <TextBlock Text="Задержка перед сбросом (минуты):" 
+                           FontSize="13" 
+                           FontWeight="SemiBold"
+                           Foreground="White" />
+                <NumericUpDown Value="{Binding AutoResetDelayMinutes, Mode=TwoWay}"
+                               Minimum="1"
+                               Maximum="1440"
+                               HorizontalAlignment="Stretch" />
+                <TextBlock FontSize="11" Foreground="#666">
+                    Например: 5 минут - задача станет невыполненной через 5 минут после выполнения
+                </TextBlock>
+            </StackPanel>
+
+            <Separator Background="#3F3F46" />
+
+            <!-- Notifications -->
+            <StackPanel Spacing="8">
+                <CheckBox IsChecked="{Binding NotificationsEnabled, Mode=TwoWay}"
+                          Content="Включить уведомления"
+                          Foreground="White" />
+                <TextBlock FontSize="11" Foreground="#666" TextWrapping="Wrap">
+                    Показывать уведомления о необходимости выполнить задачу
+                </TextBlock>
+            </StackPanel>
+
+            <!-- Notification Advance -->
+            <StackPanel Spacing="8" IsVisible="{Binding ShowNotificationAdvance}">
+                <TextBlock Text="Уведомлять заранее (минуты, 0 = в срок):" 
+                           FontSize="13" 
+                           FontWeight="SemiBold"
+                           Foreground="White" />
+                <NumericUpDown Value="{Binding NotificationAdvanceMinutes, Mode=TwoWay}"
+                               Minimum="0"
+                               Maximum="1440"
+                               HorizontalAlignment="Stretch" />
+                <TextBlock FontSize="11" Foreground="#666">
+                    0 - уведомление приходит когда наступает срок выполнения
+                </TextBlock>
+            </StackPanel>
+
+            <Separator Background="#3F3F46" />
+
+            <!-- Buttons -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Grid.Column="0"
+                        Content="Сохранить"
+                        Command="{Binding SaveCommand}"
+                        HorizontalAlignment="Stretch"
+                        Background="#0E639C"
+                        Foreground="White"
+                        Padding="15,8" />
+                <Button Grid.Column="1"
+                        Content="Отмена"
+                        Command="{Binding CancelCommand}"
+                        HorizontalAlignment="Stretch"
+                        Padding="15,8" />
+            </Grid>
+
+            <!-- Examples -->
+            <Border Background="#2D2D30" 
+                    Padding="12" 
+                    CornerRadius="6"
+                    IsVisible="{Binding IsRecurring}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="💡 Примеры использования:" 
+                               FontSize="12" 
+                               FontWeight="SemiBold"
+                               Foreground="#FF9800" />
+                    <TextBlock FontSize="11" Foreground="#AAA" TextWrapping="Wrap">
+                        <Run Text="• Ежедневная задача: Daily, интервал 1" />
+                        <LineBreak />
+                        <Run Text="• Напоминание каждые 5 минут: Minutes, интервал 5" />
+                        <LineBreak />
+                        <Run Text="• Еженедельная задача с автосбросом: Weekly, интервал 1, автосброс через 5 минут" />
+                        <LineBreak />
+                        <Run Text="• Задача раз в 2 часа: Hours, интервал 2" />
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Border>
+</UserControl>
