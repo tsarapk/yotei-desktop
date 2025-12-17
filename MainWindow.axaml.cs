@@ -23,11 +23,13 @@ public partial class MainWindow : Window
     private readonly Popup? _projectEditorPopup;
     private readonly Popup? _resourceReportPopup;
     private readonly Popup? _taskListPopup;
+    private readonly Popup? _recurringTaskConfigPopup;
     private LoginPopupView? _loginPopupView;
     private ProjectCreationPopupView? _projectCreationPopupView;
     private ProjectEditorView? _projectEditorView;
     private ResourceReportView? _resourceReportView;
     private TaskListView? _taskListView;
+    private RecurringTaskConfigView? _recurringTaskConfigView;
     private MainViewModel? _mainViewModel;
 
     public MainWindow()
@@ -41,6 +43,7 @@ public partial class MainWindow : Window
         _projectEditorPopup = this.FindControl<Popup>("ProjectEditorPopup");
         _resourceReportPopup = this.FindControl<Popup>("ResourceReportPopup");
         _taskListPopup = this.FindControl<Popup>("TaskListPopup");
+        _recurringTaskConfigPopup = this.FindControl<Popup>("RecurringTaskConfigPopup");
 
         this.KeyDown += OnKeyDown;
         
@@ -58,6 +61,7 @@ public partial class MainWindow : Window
             SetupProjectEditorPopup();
             SetupResourceReportPopup();
             SetupTaskListPopup();
+            SetupRecurringTaskConfigPopup();
         }
     }
     
@@ -203,6 +207,31 @@ public partial class MainWindow : Window
             };
             
             _taskListPopup.Child = _taskListView;
+        }
+    }
+    
+    private void SetupRecurringTaskConfigPopup()
+    {
+        if (_recurringTaskConfigPopup == null || _mainViewModel == null)
+            return;
+        
+        _mainViewModel.PropertyChanged += OnRecurringTaskConfigPopupChanged;
+    }
+    
+    private void OnRecurringTaskConfigPopupChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainViewModel.IsRecurringTaskConfigPopupOpen) && 
+            _mainViewModel != null &&
+            _mainViewModel.IsRecurringTaskConfigPopupOpen &&
+            _mainViewModel.RecurringTaskConfigViewModel != null &&
+            _recurringTaskConfigPopup != null)
+        {
+            _recurringTaskConfigView = new RecurringTaskConfigView
+            {
+                DataContext = _mainViewModel.RecurringTaskConfigViewModel
+            };
+            
+            _recurringTaskConfigPopup.Child = _recurringTaskConfigView;
         }
     }
 

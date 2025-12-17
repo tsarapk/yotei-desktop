@@ -9,6 +9,7 @@
         <entry key="Views/LoginView.axaml" value="YoteiTasks.csproj" />
         <entry key="Views/MainView.axaml" value="YoteiTasks.csproj" />
         <entry key="Views/ProjectCreationPopupView.axaml" value="YoteiTasks.csproj" />
+        <entry key="Views/RecurringTaskConfigView.axaml" value="YoteiTasks.csproj" />
         <entry key="Views/TaskEditorView.axaml" value="YoteiTasks.csproj" />
       </map>
     </option>

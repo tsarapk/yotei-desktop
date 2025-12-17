@@ -29,6 +29,7 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly ISuperUserService _superUserService;
     private readonly ProjectPermissionService _permissionService;
     private readonly NotificationService _notificationService;
+    private readonly RecurringTaskService _recurringTaskService;
     private ObservableCollection<Graph> _graphs;
     private Graph? _selectedGraph;
     private bool _suppressUpdates = false;
@@ -46,8 +47,10 @@ public class MainViewModel : INotifyPropertyChanged
     private bool _isProjectEditorPopupOpen;
     private bool _isResourceReportPopupOpen;
     private bool _isTaskListPopupOpen;
+    private bool _isRecurringTaskConfigPopupOpen;
     private ResourceReportViewModel? _resourceReportViewModel;
     private TaskListViewModel? _taskListViewModel;
+    private RecurringTaskConfigViewModel? _recurringTaskConfigViewModel;
     private Actor? _currentActor;
     private ProjectPermissions _currentPermissions = new();
 
@@ -209,6 +212,18 @@ public class MainViewModel : INotifyPropertyChanged
         set => SetProperty(ref _taskListViewModel, value);
     }
 
+    public bool IsRecurringTaskConfigPopupOpen
+    {
+        get => _isRecurringTaskConfigPopupOpen;
+        set => SetProperty(ref _isRecurringTaskConfigPopupOpen, value);
+    }
+
+    public RecurringTaskConfigViewModel? RecurringTaskConfigViewModel
+    {
+        get => _recurringTaskConfigViewModel;
+        set => SetProperty(ref _recurringTaskConfigViewModel, value);
+    }
+
     public Actor? CurrentActor
     {
         get => _currentActor;
@@ -298,6 +313,7 @@ public class MainViewModel : INotifyPropertyChanged
         _superUserService = superUserService ?? new SuperUserService(_yotei, _userActorService);
         _permissionService = new ProjectPermissionService(_yotei, _superUserService);
         _notificationService = NotificationService.Instance;
+        _recurringTaskService = new RecurringTaskService(_notificationService);
         _graphs = new ObservableCollection<Graph>();
         AddGraphCommand = new RelayCommand(_ => AddGraph());
         SaveCommand = new RelayCommand(_ => Save());
@@ -336,8 +352,6 @@ public class MainViewModel : INotifyPropertyChanged
         {
             LoadGraphFromRepository();
         }
-        
-        StartAutoSave();
     }
 
     private void LoadGraphFromRepository()
@@ -630,6 +644,68 @@ public class MainViewModel : INotifyPropertyChanged
         SelectedNode = node;
     }
 
+    public void ShowRecurringTaskConfig(GraphNode node)
+    {
+        Console.WriteLine($"[MainViewModel] Открытие настроек повторения для задачи: '{node.Label}' (NodeId={node.Id})");
+        
+        var config = _recurringTaskService.GetRecurringTask(node.Id) ?? new RecurringTaskConfig(node.Id);
+        
+        var viewModel = new RecurringTaskConfigViewModel(
+            node.Label,
+            config,
+            () => IsRecurringTaskConfigPopupOpen = false,
+            SaveRecurringTaskConfig);
+        
+        RecurringTaskConfigViewModel = viewModel;
+        IsRecurringTaskConfigPopupOpen = true;
+    }
+
+    private void SaveRecurringTaskConfig(RecurringTaskConfig config)
+    {
+        Console.WriteLine($"[MainViewModel] Сохранение настроек повторения: NodeId={config.NodeId}");
+        _recurringTaskService.ConfigureRecurringTask(config.NodeId, config);
+        _notificationService.ShowSuccess("Настройки повторения сохранены");
+    }
+
+    public void OnTaskCompleted(GraphNode node)
+    {
+        Console.WriteLine($"[MainViewModel] Уведомление о выполнении задачи: '{node.Label}' (NodeId={node.Id})");
+        _recurringTaskService.OnTaskCompleted(node.Id, node);
+    }
+
+    public void CheckRecurringTasks()
+    {
+        Console.WriteLine($"[MainViewModel] Проверка всех повторяющихся задач...");
+        
+        // Проверяем все задачи на необходимость сброса
+        int checkedCount = 0;
+        int resetCount = 0;
+        
+        foreach (var graph in _graphs)
+        {
+            foreach (var node in graph.Nodes)
+            {
+                if (node.TaskNode != null)
+                {
+                    checkedCount++;
+                    bool wasReset = _recurringTaskService.CheckAndResetTask(node.Id, node, _yotei.Tasks);
+                    if (wasReset)
+                    {
+                        resetCount++;
+                        // Обновляем визуализацию
+                        node.SyncFromTaskNode();
+                        node.RaiseVisualChanged();
+                    }
+                }
+            }
+        }
+        
+        if (resetCount > 0)
+        {
+            Console.WriteLine($"[MainViewModel] ✅ Проверено задач: {checkedCount}, сброшено: {resetCount}");
+        }
+    }
+
     public void OnLoginCompleted(Actor? actor)
     {
         IsLoginPopupOpen = false;
@@ -848,13 +924,12 @@ public class MainViewModel : INotifyPropertyChanged
         {
             Console.WriteLine($"Ошибка при загрузке: {ex.Message}");
         }
-    }
-
- 
-    private void StartAutoSave()
-    {
-       
-        _autoSaveTimer = new Timer(_ => Save(), null, TimeSpan.FromMinutes(3), TimeSpan.FromMinutes(3));
+        
+        // Запускаем автосохранение каждые 5 минут
+        _autoSaveTimer = new Timer(_ => Save(), null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+        
+        // Запускаем периодическую проверку регулярных задач каждую минуту
+        var recurringCheckTimer = new Timer(_ => CheckRecurringTasks(), null, TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(1));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

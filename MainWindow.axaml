@@ -346,6 +346,14 @@
             <!-- Child будет установлен в code-behind -->
         </Popup>
 
+        <!-- Recurring Task Config Popup -->
+        <Popup x:Name="RecurringTaskConfigPopup"
+               IsOpen="{Binding IsRecurringTaskConfigPopupOpen, Mode=TwoWay}"
+               Placement="Center"
+               IsLightDismissEnabled="True">
+            <!-- Child будет установлен в code-behind -->
+        </Popup>
+
         <!-- Notification Panel -->
         <views:NotificationPanel Grid.RowSpan="2" Grid.ColumnSpan="2"
                                  IsHitTestVisible="False"

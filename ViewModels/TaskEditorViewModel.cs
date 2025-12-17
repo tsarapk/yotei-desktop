@@ -271,6 +271,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
     public ICommand AddRelationCommand { get; }
     public ICommand CompleteTaskCommand { get; }
     public ICommand AddResourceCommand { get; }
+    public ICommand ConfigureRecurringCommand { get; }
 
     public TaskEditorViewModel(GraphNode node, MainViewModel? mainViewModel, Graph? currentGraph)
     {
@@ -340,6 +341,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         AddRelationCommand = new RelayCommand(_ => AddRelation());
         CompleteTaskCommand = new RelayCommand(_ => ToggleComplete());
         AddResourceCommand = new RelayCommand(_ => AddResource());
+        ConfigureRecurringCommand = new RelayCommand(_ => ConfigureRecurring());
     }
 
     private void AddRelation()
@@ -478,6 +480,9 @@ public class TaskEditorViewModel : INotifyPropertyChanged
             if (result == Result.OK)
             {
                 Console.WriteLine($"Задача '{_node.TaskNode.Title}' успешно завершена пользователем {_mainViewModel.CurrentActor?.Name}");
+                
+                // Уведомляем RecurringTaskService о выполнении задачи
+                _mainViewModel.OnTaskCompleted(_node);
             }
             else if (result == Result.ThereAreUncompletedTasks && uncompleted != null && uncompleted.Count > 0)
             {
@@ -527,6 +532,10 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(TaskCompletionInfo));
     }
 
+    private void ConfigureRecurring()
+    {
+        _mainViewModel?.ShowRecurringTaskConfig(_node);
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
