@@ -8,85 +8,164 @@
         x:Class="YoteiTasks.Views.TaskEditorView"
         x:DataType="vm:TaskEditorViewModel"
         Background="#141414">
-    <ScrollViewer>
-        <StackPanel Margin="20" Spacing="15">
-            
-            <TextBox x:Name="TitleTextBox" 
-                     Text="{Binding Title, Mode=TwoWay}"
-                     IsReadOnly="{Binding IsReadOnly}" />
-            
-            <TextBlock Text="Приоритет (0-10):" Foreground="White" />
-            <NumericUpDown x:Name="PriorityNumericUpDown" 
-                           Minimum="0" 
-                           Maximum="10" 
-                           Value="{Binding Priority}"
-                           IsEnabled="{Binding !IsReadOnly}" />
-            
-            <TextBlock Text="Статус:" Foreground="White" />
-            <ComboBox x:Name="StatusComboBox" 
-                      SelectedItem="{Binding SelectedStatus}"
-                      IsEnabled="{Binding !IsReadOnly}">
-                <ComboBox.Items>
-                    <x:Static Member="yotei:TaskStatus.InProgress" />
-                    <x:Static Member="yotei:TaskStatus.Queued" />
-                    <x:Static Member="yotei:TaskStatus.Canceled" />
-                </ComboBox.Items>
-            </ComboBox>
-            
-           
-            
-            <TextBlock Text="Описание:" Foreground="White" />
-            <TextBox x:Name="PayloadTextBox" 
-                     Text="{Binding Payload}"
-                     AcceptsReturn="True"
-                     TextWrapping="Wrap"
-                     Height="100"
-                     IsReadOnly="{Binding IsReadOnly}" />
-            
-            <TextBlock Text="Дедлайн:" Foreground="White" />
-            <DatePicker x:Name="DeadlineDatePicker" 
-                        SelectedDate="{Binding Deadline}"
-                        IsEnabled="{Binding !IsReadOnly}" />
-            
-            <TextBlock Text="Исполнитель:" Foreground="White" />
-            <ComboBox x:Name="ActorComboBox" 
-                     ItemsSource="{Binding AvailableActors}"
-                     SelectedItem="{Binding SelectedActor}"
-                     IsEnabled="{Binding !IsReadOnly}">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Name}" />
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
-            
-            <TextBlock Text="Добавить связь с:" Foreground="White" />
-            <Grid ColumnDefinitions="*,Auto">
-                <ComboBox x:Name="RelationComboBox" 
-                         Grid.Column="0"
-                         ItemsSource="{Binding AvailableNodes}"
-                         SelectedItem="{Binding SelectedRelationNode}"
+    <Grid>
+        <!-- Empty state when no task is selected -->
+        <TextBlock x:Name="EmptyStateText"
+                   Text="Выберите задачу"
+                   FontSize="24"
+                   Foreground="#666"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   IsVisible="False" />
+        
+        <!-- Task editor when a task is selected -->
+        <ScrollViewer x:Name="EditorContent">
+            <StackPanel Margin="20" Spacing="15">
+                
+                <TextBox x:Name="TitleTextBox" 
+                         Text="{Binding Title, Mode=TwoWay}"
+                         IsReadOnly="{Binding IsReadOnly}" />
+                
+                <TextBlock Text="Приоритет (0-10):" Foreground="White" />
+                <NumericUpDown x:Name="PriorityNumericUpDown" 
+                               Minimum="0" 
+                               Maximum="10" 
+                               Value="{Binding Priority}"
+                               IsEnabled="{Binding !IsReadOnly}" />
+                
+                <TextBlock Text="Статус:" Foreground="White" />
+                <ComboBox x:Name="StatusComboBox" 
+                          SelectedItem="{Binding SelectedStatus}"
+                          IsEnabled="{Binding !IsReadOnly}">
+                    <ComboBox.Items>
+                        <x:Static Member="yotei:TaskStatus.InProgress" />
+                        <x:Static Member="yotei:TaskStatus.Queued" />
+                        <x:Static Member="yotei:TaskStatus.Canceled" />
+                    </ComboBox.Items>
+                </ComboBox>
+                
+               
+                
+                <TextBlock Text="Описание:" Foreground="White" />
+                <TextBox x:Name="PayloadTextBox" 
+                         Text="{Binding Payload}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         Height="100"
+                         IsReadOnly="{Binding IsReadOnly}" />
+                
+                <TextBlock Text="Дедлайн:" Foreground="White" />
+                <DatePicker x:Name="DeadlineDatePicker" 
+                            SelectedDate="{Binding Deadline}"
+                            IsEnabled="{Binding !IsReadOnly}" />
+                
+                <TextBlock Text="Исполнитель:" Foreground="White" />
+                <ComboBox x:Name="ActorComboBox" 
+                         ItemsSource="{Binding AvailableActors}"
+                         SelectedItem="{Binding SelectedActor}"
                          IsEnabled="{Binding !IsReadOnly}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Label}" />
+                            <TextBlock Text="{Binding Name}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-               
-            </Grid>
-            <Button Content="Добавить связь" 
-                    Command="{Binding AddRelationCommand}"
-                    HorizontalAlignment="Right"
-                    IsEnabled="{Binding !IsReadOnly}" />
-            
-            <Button x:Name="CompleteButton" 
-                    Content="{Binding CompleteButtonText}"
-                    Command="{Binding CompleteTaskCommand}"
-                    Margin="0,10,0,0"
-                    IsEnabled="{Binding !IsReadOnly}" />
-            
-        </StackPanel>
-    </ScrollViewer>
+                
+                <TextBlock Text="Добавить связь с:" Foreground="White" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <ComboBox x:Name="RelationComboBox" 
+                             Grid.Column="0"
+                             ItemsSource="{Binding AvailableNodes}"
+                             SelectedItem="{Binding SelectedRelationNode}"
+                             IsEnabled="{Binding !IsReadOnly}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Label}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                   
+                </Grid>
+                <Button Content="Добавить связь" 
+                        Command="{Binding AddRelationCommand}"
+                        HorizontalAlignment="Right"
+                        IsEnabled="{Binding !IsReadOnly}" />
+                
+                <Separator Margin="0,10,0,10" Background="#333" />
+                
+                <TextBlock Text="Ресурсы задачи:" Foreground="White" FontWeight="Bold" />
+                
+                <TextBlock Text="Добавить ресурс:" Foreground="White" />
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="5">
+                    <ComboBox x:Name="ResourceComboBox" 
+                             Grid.Column="0"
+                             ItemsSource="{Binding AvailableResources}"
+                             SelectedItem="{Binding SelectedResource}"
+                             IsEnabled="{Binding !IsReadOnly}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <NumericUpDown x:Name="ResourceAmountNumeric"
+                                   Grid.Column="1"
+                                   Width="100"
+                                   Minimum="0"
+                                   Value="{Binding ResourceAmount}"
+                                   IsEnabled="{Binding !IsReadOnly}" />
+                    <Button Content="Добавить" 
+                            Grid.Column="2"
+                            Command="{Binding AddResourceCommand}"
+                            IsEnabled="{Binding !IsReadOnly}" />
+                </Grid>
+                
+                <TextBlock Text="Используемые ресурсы:" Foreground="White" Margin="0,10,0,5" />
+                <ItemsControl ItemsSource="{Binding ResourceUsages}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#1E1E1E" 
+                                    Padding="10" 
+                                    Margin="0,2"
+                                    CornerRadius="4">
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                    <TextBlock Grid.Column="0" 
+                                               Text="{Binding ResourceName}" 
+                                               Foreground="White"
+                                               VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1"
+                                                   Width="100"
+                                                   Minimum="0"
+                                                   Value="{Binding Amount}"
+                                                   IsEnabled="{Binding !$parent[UserControl].DataContext.IsReadOnly}" />
+                                    <Button Grid.Column="2" 
+                                            Content="Удалить"
+                                            Command="{Binding DeleteCommand}"
+                                            IsEnabled="{Binding !$parent[UserControl].DataContext.IsReadOnly}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                
+                <Separator Margin="0,10,0,10" Background="#333" />
+                
+                <TextBlock Text="Управление задачей:" Foreground="White" FontWeight="Bold" />
+                
+                <TextBlock Text="{Binding TaskCompletionInfo}" 
+                           Foreground="#AAA" 
+                           TextWrapping="Wrap"
+                           Margin="0,5,0,5" />
+                
+                <Button x:Name="CompleteButton" 
+                        Content="{Binding CompleteButtonText}"
+                        Command="{Binding CompleteTaskCommand}"
+                        Margin="0,5,0,0"
+                        IsEnabled="{Binding CanCompleteTask}"
+                        HorizontalAlignment="Stretch" />
+                
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </UserControl>
 

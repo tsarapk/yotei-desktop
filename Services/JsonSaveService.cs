@@ -39,6 +39,18 @@ public class JsonSaveService : ISaveService
         {
             var json = JsonSerializer.Serialize(data, JsonOptions);
             File.WriteAllText(_saveFilePath, json);
+            Console.WriteLine($"[JsonSaveService] Данные успешно сохранены в: {_saveFilePath}");
+            
+            // Log resource usages for debugging
+            int totalResourceUsages = 0;
+            foreach (var graph in data.Graphs)
+            {
+                foreach (var node in graph.Nodes)
+                {
+                    totalResourceUsages += node.ResourceUsages?.Count ?? 0;
+                }
+            }
+            Console.WriteLine($"[JsonSaveService] Сохранено использований ресурсов: {totalResourceUsages}");
         }
         catch (Exception ex)
         {
@@ -51,14 +63,36 @@ public class JsonSaveService : ISaveService
         try
         {
             if (!File.Exists(_saveFilePath))
+            {
+                Console.WriteLine($"[JsonSaveService] Файл сохранения не найден: {_saveFilePath}");
                 return null;
+            }
 
             var json = File.ReadAllText(_saveFilePath);
-            return JsonSerializer.Deserialize<SaveData>(json, JsonOptions);
+            var data = JsonSerializer.Deserialize<SaveData>(json, JsonOptions);
+            
+            if (data != null)
+            {
+                Console.WriteLine($"[JsonSaveService] Данные успешно загружены из: {_saveFilePath}");
+                
+                // Log resource usages for debugging
+                int totalResourceUsages = 0;
+                foreach (var graph in data.Graphs)
+                {
+                    foreach (var node in graph.Nodes)
+                    {
+                        totalResourceUsages += node.ResourceUsages?.Count ?? 0;
+                    }
+                }
+                Console.WriteLine($"[JsonSaveService] Загружено использований ресурсов: {totalResourceUsages}");
+            }
+            
+            return data;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Ошибка при загрузке: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
             return null;
         }
     }

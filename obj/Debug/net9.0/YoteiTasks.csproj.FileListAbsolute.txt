@@ -104,3 +104,4 @@
 /media/vanya/SSD/Projects/Yotei/YoteiTasks/bin/Debug/net9.0/ReactiveUI.dll
 /media/vanya/SSD/Projects/Yotei/YoteiTasks/bin/Debug/net9.0/Splat.dll
 /media/vanya/SSD/Projects/Yotei/YoteiTasks/bin/Debug/net9.0/System.Reactive.dll
+/media/vanya/SSD/Projects/Yotei/YoteiTasks/obj/Debug/net9.0/YoteiTasks.sourcelink.json

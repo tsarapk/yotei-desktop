@@ -28,6 +28,9 @@ public class TaskEditorViewModel : INotifyPropertyChanged
     private Actor? _selectedActor;
     private GraphNode? _selectedRelationNode;
     private ComboBox? _relationTypeComboBox;
+    private Resource? _selectedResource;
+    private double _resourceAmount;
+    private ObservableCollection<TaskResourceUsageViewModel> _resourceUsages = new();
 
     public GraphNode Node => _node;
     
@@ -79,6 +82,8 @@ public class TaskEditorViewModel : INotifyPropertyChanged
                 _node.RaiseVisualChanged();
                 _mainViewModel?.SyncGraphToRepository(_currentGraph);
                 OnPropertyChanged(nameof(CompleteButtonText));
+                OnPropertyChanged(nameof(CanCompleteTask));
+                OnPropertyChanged(nameof(TaskCompletionInfo));
             }
         }
     }
@@ -166,6 +171,8 @@ public class TaskEditorViewModel : INotifyPropertyChanged
                 _node.SyncFromTaskNode();
                 _node.RaiseVisualChanged();
                 _mainViewModel?.SyncGraphToRepository(_currentGraph);
+                OnPropertyChanged(nameof(CanCompleteTask));
+                OnPropertyChanged(nameof(TaskCompletionInfo));
             }
         }
     }
@@ -178,15 +185,92 @@ public class TaskEditorViewModel : INotifyPropertyChanged
 
     public ObservableCollection<Actor> AvailableActors { get; }
     public ObservableCollection<GraphNode> AvailableNodes { get; }
+    public ObservableCollection<Resource> AvailableResources { get; }
+    
+    public ObservableCollection<TaskResourceUsageViewModel> ResourceUsages
+    {
+        get => _resourceUsages;
+        set => SetProperty(ref _resourceUsages, value);
+    }
+    
+    public Resource? SelectedResource
+    {
+        get => _selectedResource;
+        set => SetProperty(ref _selectedResource, value);
+    }
+    
+    public double ResourceAmount
+    {
+        get => _resourceAmount;
+        set => SetProperty(ref _resourceAmount, value);
+    }
 
     public string CompleteButtonText => _node.TaskNode?.IsCompleted == true 
         ? "Отменить выполнение" 
         : "Завершить задачу";
 
+    public bool CanCompleteTask
+    {
+        get
+        {
+            if (_node.TaskNode == null || _mainViewModel == null)
+                return false;
+
+            // Проверяем права на завершение задач
+            if (!_mainViewModel.CanCompleteTasks)
+                return false;
+
+            // Если задача уже завершена, можем её отменить
+            if (_node.TaskNode.IsCompleted)
+                return true;
+
+            // Проверяем, что задача назначена текущему пользователю
+            var currentActor = _mainViewModel.CurrentActor;
+            if (currentActor == null)
+                return false;
+
+            var taskActor = _node.TaskNode.Meta?.PerfomedBy;
+            if (taskActor == null)
+                return false;
+
+            return taskActor.Id == currentActor.Id;
+        }
+    }
+
+    public string TaskCompletionInfo
+    {
+        get
+        {
+            if (_node.TaskNode == null || _mainViewModel == null)
+                return string.Empty;
+
+            if (_node.TaskNode.IsCompleted)
+                return "✓ Задача завершена. Вы можете вернуть её в работу.";
+
+            var currentActor = _mainViewModel.CurrentActor;
+            var taskActor = _node.TaskNode.Meta?.PerfomedBy;
+
+            if (!_mainViewModel.CanCompleteTasks)
+                return "⚠ У вас нет прав на завершение задач";
+
+            if (currentActor == null)
+                return "⚠ Войдите в систему для завершения задачи";
+
+            if (taskActor == null)
+                return "⚠ Задача не назначена. Назначьте исполнителя для завершения.";
+
+            if (taskActor.Id != currentActor.Id)
+                return $"⚠ Задача назначена пользователю {taskActor.Name}. Только он может её завершить.";
+
+            return $"✓ Вы можете завершить эту задачу (назначена вам)";
+        }
+    }
+
     public ICommand OkCommand { get; }
     public ICommand CancelCommand { get; }
     public ICommand AddRelationCommand { get; }
     public ICommand CompleteTaskCommand { get; }
+    public ICommand AddResourceCommand { get; }
 
     public TaskEditorViewModel(GraphNode node, MainViewModel? mainViewModel, Graph? currentGraph)
     {
@@ -196,6 +280,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
 
         AvailableActors = new ObservableCollection<Actor>();
         AvailableNodes = new ObservableCollection<GraphNode>();
+        AvailableResources = new ObservableCollection<Resource>();
 
         
         if (node.TaskNode != null)
@@ -215,12 +300,25 @@ public class TaskEditorViewModel : INotifyPropertyChanged
             _title = node.Label;
         }
 
+        // Автоматически назначаем задачу текущему пользователю, если она не назначена
+        if (node.TaskNode != null && node.TaskNode.Meta?.PerfomedBy == null && mainViewModel?.CurrentActor != null)
+        {
+            mainViewModel.Yotei.Tasks.BindActor(node.TaskNode, mainViewModel.CurrentActor);
+            _selectedActor = mainViewModel.CurrentActor;
+        }
+
         
         if (mainViewModel != null)
         {
             foreach (var actor in mainViewModel.Yotei.Actors)
             {
                 AvailableActors.Add(actor);
+            }
+            
+            // Load available resources
+            foreach (var resource in mainViewModel.Yotei.Resources.GetAll())
+            {
+                AvailableResources.Add(resource);
             }
         }
 
@@ -232,9 +330,16 @@ public class TaskEditorViewModel : INotifyPropertyChanged
                 AvailableNodes.Add(availableNode);
             }
         }
+        
+        // Load existing resource usages
+        foreach (var resourceUsage in node.ResourceUsages)
+        {
+            _resourceUsages.Add(new TaskResourceUsageViewModel(resourceUsage, DeleteResourceUsage, OnResourceAmountChanged));
+        }
 
         AddRelationCommand = new RelayCommand(_ => AddRelation());
         CompleteTaskCommand = new RelayCommand(_ => ToggleComplete());
+        AddResourceCommand = new RelayCommand(_ => AddResource());
     }
 
     private void AddRelation()
@@ -259,26 +364,167 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         _selectedRelationNode = null;
         OnPropertyChanged(nameof(SelectedRelationNode));
     }
+    
+    private void AddResource()
+    {
+        if (_selectedResource == null || _resourceAmount <= 0)
+            return;
+        
+        Console.WriteLine($"[TaskEditor] Добавление ресурса '{_selectedResource.Name}' (количество: {_resourceAmount}) к задаче '{_node.Label}'");
+        
+        // Check if resource already exists in the list
+        var existingUsage = _node.ResourceUsages.FirstOrDefault(ru => ru.Resource.Id == _selectedResource.Id);
+        if (existingUsage != null)
+        {
+            // Update existing amount
+            existingUsage.Amount += _resourceAmount;
+            var existingViewModel = _resourceUsages.FirstOrDefault(vm => vm.Model == existingUsage);
+            if (existingViewModel != null)
+            {
+                existingViewModel.Amount = existingUsage.Amount;
+            }
+            Console.WriteLine($"[TaskEditor] Обновлено количество существующего ресурса: {existingUsage.Amount}");
+        }
+        else
+        {
+            // Add new resource usage
+            var resourceUsage = new TaskResourceUsage(_selectedResource, _resourceAmount);
+            _node.ResourceUsages.Add(resourceUsage);
+            _resourceUsages.Add(new TaskResourceUsageViewModel(resourceUsage, DeleteResourceUsage, OnResourceAmountChanged));
+            Console.WriteLine($"[TaskEditor] Добавлен новый ресурс. Всего ресурсов в задаче: {_node.ResourceUsages.Count}");
+        }
+        
+        // Reset selection
+        _selectedResource = null;
+        _resourceAmount = 0;
+        OnPropertyChanged(nameof(SelectedResource));
+        OnPropertyChanged(nameof(ResourceAmount));
+        
+        _mainViewModel?.SyncGraphToRepository(_currentGraph);
+        Console.WriteLine($"[TaskEditor] Вызов Save() для сохранения изменений...");
+        _mainViewModel?.Save();
+    }
+    
+    private void DeleteResourceUsage(TaskResourceUsageViewModel viewModel)
+    {
+        _node.ResourceUsages.Remove(viewModel.Model);
+        _resourceUsages.Remove(viewModel);
+        _mainViewModel?.SyncGraphToRepository(_currentGraph);
+        _mainViewModel?.Save();
+    }
+    
+    private void OnResourceAmountChanged()
+    {
+        _mainViewModel?.SyncGraphToRepository(_currentGraph);
+        _mainViewModel?.Save();
+    }
 
     private void ToggleComplete()
     {
         if (_node.TaskNode == null || _mainViewModel == null)
             return;
 
+        // Проверяем права на завершение задачи
+        if (!CanCompleteTask)
+        {
+            var currentActor = _mainViewModel.CurrentActor;
+            var taskActor = _node.TaskNode.Meta?.PerfomedBy;
+            
+            if (!_mainViewModel.CanCompleteTasks)
+            {
+                Console.WriteLine("У вас нет прав на завершение задач");
+            }
+            else if (currentActor == null)
+            {
+                Console.WriteLine("Необходимо войти в систему для завершения задачи");
+            }
+            else if (taskActor == null)
+            {
+                Console.WriteLine("Задача не назначена ни одному пользователю");
+            }
+            else if (taskActor.Id != currentActor.Id)
+            {
+                Console.WriteLine($"Задача назначена пользователю {taskActor.Name}. Вы не можете завершить чужую задачу.");
+            }
+            return;
+        }
+
         if (_node.TaskNode.IsCompleted)
         {
-            _mainViewModel.Yotei.Tasks.Uncomplete(_node.TaskNode.Id);
+            try
+            {
+                var result = _mainViewModel.Yotei.Tasks.Uncomplete(_node.TaskNode.Id);
+                if (result != null)
+                {
+                    Console.WriteLine($"Задача '{_node.TaskNode.Title}' возвращена в работу");
+                }
+                else
+                {
+                    Console.WriteLine($"Ошибка при отмене завершения задачи: {result}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Исключение при отмене завершения задачи: {ex.Message}");
+                // Пытаемся установить статус напрямую
+                _node.TaskNode.SetStatusSecure(TaskStatus.InProgress);
+                Console.WriteLine($"Задача '{_node.TaskNode.Title}' возвращена в работу (через SetStatusSecure)");
+            }
         }
         else
         {
             var result = _mainViewModel.Yotei.Tasks.TryComplete(_node.TaskNode, out var uncompleted);
-            if (!result && uncompleted != null && uncompleted.Count > 0)
+            
+            if (result == Result.OK)
             {
-                Console.WriteLine($"Нельзя завершить задачу. Незавершенные зависимости: {uncompleted.Count}");
+                Console.WriteLine($"Задача '{_node.TaskNode.Title}' успешно завершена пользователем {_mainViewModel.CurrentActor?.Name}");
+            }
+            else if (result == Result.ThereAreUncompletedTasks && uncompleted != null && uncompleted.Count > 0)
+            {
+                Console.WriteLine($"❌ Нельзя завершить задачу '{_node.TaskNode.Title}'");
+                Console.WriteLine($"Сначала необходимо выполнить следующие задачи ({uncompleted.Count}):");
+                
+                // Получаем названия незавершенных задач
+                var uncompletedTasks = new List<string>();
+                foreach (var taskId in uncompleted)
+                {
+                    var task = _mainViewModel.Yotei.Tasks.GetAll().FirstOrDefault(t => t.Id == taskId);
+                    if (task != null)
+                    {
+                        uncompletedTasks.Add($"  • '{task.Title}' (Статус: {task.Status})");
+                    }
+                    else
+                    {
+                        uncompletedTasks.Add($"  • Задача ID: {taskId}");
+                    }
+                }
+                
+                foreach (var taskInfo in uncompletedTasks)
+                {
+                    Console.WriteLine(taskInfo);
+                }
+            }
+            else if (result == Result.WrongActor)
+            {
+                Console.WriteLine($"Ошибка: задача назначена другому пользователю");
+            }
+            else
+            {
+                Console.WriteLine($"Ошибка при завершении задачи: {result}");
             }
         }
 
+        // Обновляем визуализацию и синхронизируем с репозиторием
+        _node.SyncFromTaskNode();
+        _node.RaiseVisualChanged();
+        _mainViewModel?.SyncGraphToRepository(_currentGraph);
+
+        // Обновляем статус в UI
+        _selectedStatus = _node.TaskNode.Status;
+        OnPropertyChanged(nameof(SelectedStatus));
         OnPropertyChanged(nameof(CompleteButtonText));
+        OnPropertyChanged(nameof(CanCompleteTask));
+        OnPropertyChanged(nameof(TaskCompletionInfo));
     }
 
 

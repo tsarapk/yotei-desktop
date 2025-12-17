@@ -13,6 +13,20 @@ public partial class TaskEditorView : UserControl
     public TaskEditorView()
     {
         InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
+        UpdateVisibility();
+    }
+    
+    private void OnDataContextChanged(object? sender, EventArgs e)
+    {
+        UpdateVisibility();
+    }
+    
+    private void UpdateVisibility()
+    {
+        bool hasTask = DataContext != null;
+        EmptyStateText.IsVisible = !hasTask;
+        EditorContent.IsVisible = hasTask;
     }
     
     protected override void OnLoaded(RoutedEventArgs e)

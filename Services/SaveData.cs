@@ -107,6 +107,14 @@ public class NodeSaveData
     public DateTimeOffset? Deadline { get; set; }
     public string? ActorId { get; set; }
     public bool IsCompleted { get; set; }
+    public List<TaskResourceUsageSaveData> ResourceUsages { get; set; } = new();
+}
+
+
+public class TaskResourceUsageSaveData
+{
+    public string ResourceId { get; set; } = string.Empty;
+    public double Amount { get; set; }
 }
 
 

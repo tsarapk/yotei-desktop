@@ -41,6 +41,7 @@ public class ProjectPermissionService
                 CanCreateTasks = true,
                 CanEditTasks = true,
                 CanDeleteTasks = true,
+                CanCompleteTasks = true,
                 CanManageUsers = true,
                 CanManageRoles = true
             };
@@ -76,6 +77,7 @@ public class ProjectPermissionService
             CanCreateTasks = hasFullAccess || role.privs.Contains(RolePriv.CanAddNewTasks),
             CanEditTasks = hasFullAccess || role.privs.Contains(RolePriv.CanWriteProject),
             CanDeleteTasks = hasFullAccess,
+            CanCompleteTasks = hasFullAccess || role.privs.Contains(RolePriv.CanWriteProject),
             CanManageUsers = hasFullAccess,
             CanManageRoles = hasFullAccess
         };
@@ -96,6 +98,7 @@ public class ProjectPermissionService
             ProjectAction.CreateTask => permissions.CanCreateTasks,
             ProjectAction.EditTask => permissions.CanEditTasks,
             ProjectAction.DeleteTask => permissions.CanDeleteTasks,
+            ProjectAction.CompleteTask => permissions.CanCompleteTasks,
             ProjectAction.ManageUsers => permissions.CanManageUsers,
             ProjectAction.ManageRoles => permissions.CanManageRoles,
             _ => false
@@ -114,6 +117,7 @@ public class ProjectPermissions
     public bool CanCreateTasks { get; set; }
     public bool CanEditTasks { get; set; }
     public bool CanDeleteTasks { get; set; }
+    public bool CanCompleteTasks { get; set; }
     public bool CanManageUsers { get; set; }
     public bool CanManageRoles { get; set; }
 
@@ -122,7 +126,7 @@ public class ProjectPermissions
     
     public bool HasAnyPermission => 
         CanViewProject || CanEditProject || CanDeleteProject ||
-        CanCreateTasks || CanEditTasks || CanDeleteTasks ||
+        CanCreateTasks || CanEditTasks || CanDeleteTasks || CanCompleteTasks ||
         CanManageUsers || CanManageRoles;
 
     
@@ -142,6 +146,7 @@ public enum ProjectAction
     CreateTask,
     EditTask,
     DeleteTask,
+    CompleteTask,
     ManageUsers,
     ManageRoles
 }

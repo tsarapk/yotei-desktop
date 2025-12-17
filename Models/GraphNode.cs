@@ -43,6 +43,8 @@ public class GraphNode : INotifyPropertyChanged
 
     
     public TaskNode? TaskNode { get; set; }
+    
+    public List<TaskResourceUsage> ResourceUsages { get; set; } = new();
 
     public GraphNode(string id, string label, double x = 0, double y = 0)
     {

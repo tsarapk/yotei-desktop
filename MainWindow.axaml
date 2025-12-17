@@ -136,6 +136,7 @@
             <Border Grid.Row="1" Grid.ColumnSpan="2"
                     Background="#141414"
                     Padding="10"
+                    ZIndex="1000"
                     IsVisible="{Binding IsRolesTab}">
                 <StackPanel Spacing="10">
                     <StackPanel Orientation="Horizontal" Spacing="10">
@@ -195,12 +196,11 @@
                                DataContext="{Binding}"
                                IsVisible="{Binding IsProjectsTab}" />
 
-            <Border Grid.RowSpan="2" Grid.Column="1"
+            <Border Grid.Row="2" Grid.Column="1"
                     Background="#141414"
                     Padding="2 0 0 0"
                     BorderBrush="#3F3F46" 
-                    BorderThickness="1,0,0,0"
-                    IsVisible="{Binding TaskEditor}">
+                    BorderThickness="1,0,0,0">
                 <views:TaskEditorView DataContext="{Binding TaskEditor}" />
             </Border>
 

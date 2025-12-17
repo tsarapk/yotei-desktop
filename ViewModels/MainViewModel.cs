@@ -215,6 +215,7 @@ public class MainViewModel : INotifyPropertyChanged
                 OnPropertyChanged(nameof(CanCreateTasks));
                 OnPropertyChanged(nameof(CanEditTasks));
                 OnPropertyChanged(nameof(CanDeleteTasks));
+                OnPropertyChanged(nameof(CanCompleteTasks));
                 OnPropertyChanged(nameof(IsReadOnlyMode));
             }
         }
@@ -226,6 +227,7 @@ public class MainViewModel : INotifyPropertyChanged
     public bool CanCreateTasks => _currentPermissions.CanCreateTasks;
     public bool CanEditTasks => _currentPermissions.CanEditTasks;
     public bool CanDeleteTasks => _currentPermissions.CanDeleteTasks;
+    public bool CanCompleteTasks => _currentPermissions.CanCompleteTasks;
     public bool IsReadOnlyMode => _currentPermissions.IsReadOnly;
 
     public Yotei Yotei => _yotei;
@@ -290,7 +292,15 @@ public class MainViewModel : INotifyPropertyChanged
         Load();
         
         
-        _superUserService.GetOrCreateSuperUser();
+        var superUser = _superUserService.GetOrCreateSuperUser();
+        
+        // Автоматически логиним SuperUser если никто не залогинен
+        if (CurrentActor == null && superUser != null)
+        {
+            CurrentActor = superUser;
+            _yotei.Actors.SetCurrent(superUser);
+            UpdatePermissions();
+        }
         
         if (_graphs.Count == 0)
         {
@@ -539,6 +549,10 @@ public class MainViewModel : INotifyPropertyChanged
         if (actor != null)
         {
             CurrentActor = actor;
+            
+            // Устанавливаем текущего актора в репозитории Yotei
+            _yotei.Actors.SetCurrent(actor);
+            
             UpdatePermissions();
             _notificationService.ShowSuccess($"Добро пожаловать, {actor.Name}!");
         }
@@ -557,7 +571,15 @@ public class MainViewModel : INotifyPropertyChanged
         }
         
         var actorName = CurrentActor.Name;
-        CurrentActor = null;
+        
+        // Возвращаемся к SuperUser после выхода
+        var superUser = _superUserService.GetOrCreateSuperUser();
+        CurrentActor = superUser;
+        if (superUser != null)
+        {
+            _yotei.Actors.SetCurrent(superUser);
+        }
+        
         UpdatePermissions();
         _notificationService.ShowInfo($"Вы вышли из аккаунта {actorName}");
     }

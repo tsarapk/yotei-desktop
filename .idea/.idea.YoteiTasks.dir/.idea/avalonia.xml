@@ -5,6 +5,7 @@
       <map>
         <entry key="MainWindow.axaml" value="YoteiTasks.csproj" />
         <entry key="Views/GraphCanvas.axaml" value="YoteiTasks.csproj" />
+        <entry key="Views/LoginPopupView.axaml" value="YoteiTasks.csproj" />
         <entry key="Views/LoginView.axaml" value="YoteiTasks.csproj" />
         <entry key="Views/MainView.axaml" value="YoteiTasks.csproj" />
         <entry key="Views/ProjectCreationPopupView.axaml" value="YoteiTasks.csproj" />

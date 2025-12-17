@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
@@ -92,13 +93,15 @@ public class NodeRenderer
     private Border CreateNodeBorder(GraphNode node)
     {
         var borderBrush = GetNodeBorderBrush(node);
+        var background = GetNodeBackground(node);
+        var opacity = GetNodeOpacity(node);
         
         return new Border
         {
-            Background = LocalColors.NodeBackDefault,
+            Background = background,
             BorderBrush = borderBrush,
             BorderThickness = new Thickness(1),
-           
+            Opacity = opacity,
             CornerRadius = new CornerRadius(4)
         };
     }
@@ -128,6 +131,8 @@ public class NodeRenderer
         if (node.TaskNode != null)
         {
             border.BorderBrush = GetNodeBorderBrush(node);
+            border.Background = GetNodeBackground(node);
+            border.Opacity = GetNodeOpacity(node);
             border.InvalidateMeasure();
         }
     }
@@ -160,7 +165,38 @@ public class NodeRenderer
         {
             labelText = $"[{node.TaskNode.Priority}] {labelText}";
         }
+        
+        // Добавляем индикатор завершенной задачи
+        if (node.TaskNode != null && node.TaskNode.IsCompleted)
+        {
+            labelText = $"✓ {labelText}";
+        }
+        
         return labelText;
+    }
+
+    private IBrush GetNodeBackground(GraphNode node)
+    {
+        if (node.TaskNode == null)
+            return LocalColors.NodeBackDefault;
+
+        // Для завершенных задач используем более темный фон
+        if (node.TaskNode.IsCompleted)
+            return new SolidColorBrush(Color.FromRgb(40, 40, 40));
+
+        return LocalColors.NodeBackDefault;
+    }
+
+    private double GetNodeOpacity(GraphNode node)
+    {
+        if (node.TaskNode == null)
+            return 1.0;
+
+        // Завершенные задачи отображаются полупрозрачными (неактивными)
+        if (node.TaskNode.IsCompleted)
+            return 0.6;
+
+        return 1.0;
     }
 
     private void SetNodePosition(Border border, GraphNode node)
