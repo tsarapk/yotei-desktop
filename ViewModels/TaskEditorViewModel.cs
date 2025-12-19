@@ -250,14 +250,14 @@ public class TaskEditorViewModel : INotifyPropertyChanged
             if (_node.TaskNode.IsCompleted)
                 return true;
 
-            // Проверяем, что задача назначена текущему пользователю
+            // Проверяем, что задача назначена текущему пользователю (если не назначена — позволяем автоназначение)
             var currentActor = _mainViewModel.CurrentActor;
             if (currentActor == null)
                 return false;
 
             var taskActor = _node.TaskNode.Meta?.PerfomedBy;
             if (taskActor == null)
-                return false;
+                return true; // разрешаем, автоназначим в ToggleComplete
 
             return taskActor.Id == currentActor.Id;
         }
@@ -367,7 +367,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         CompleteTaskCommand = new RelayCommand(_ => ToggleComplete());
         AddResourceCommand = new RelayCommand(_ => AddResource());
         ConfigureRecurringCommand = new RelayCommand(_ => ConfigureRecurring());
-        //RefreshEditingState();
+        RefreshEditingState();
     }
 
     private void AddRelation()
@@ -563,12 +563,22 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CompleteButtonText));
         OnPropertyChanged(nameof(CanCompleteTask));
         OnPropertyChanged(nameof(TaskCompletionInfo));
-        //RefreshEditingState();
+        RefreshEditingState();
     }
 
     private void ConfigureRecurring()
     {
         _mainViewModel?.ShowRecurringTaskConfig(_node);
+    }
+
+    private void RefreshEditingState()
+    {
+        OnPropertyChanged(nameof(IsTaskLocked));
+        OnPropertyChanged(nameof(IsEditorReadOnly));
+        OnPropertyChanged(nameof(CanEditTask));
+        OnPropertyChanged(nameof(CanCompleteTask));
+        OnPropertyChanged(nameof(TaskCompletionInfo));
+        OnPropertyChanged(nameof(CompleteButtonText));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

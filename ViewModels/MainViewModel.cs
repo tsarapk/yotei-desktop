@@ -669,7 +669,7 @@ public class MainViewModel : INotifyPropertyChanged
     public void OnTaskCompleted(GraphNode node)
     {
         Console.WriteLine($"[MainViewModel] Уведомление о выполнении задачи: '{node.Label}' (NodeId={node.Id})");
-        _recurringTaskService.OnTaskCompleted(node.Id, node);
+        _recurringTaskService.OnTaskCompleted(node.Id, node, _yotei.Tasks);
     }
 
     public void CheckRecurringTasks()

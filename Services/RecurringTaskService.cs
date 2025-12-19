@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using YoteiLib.Core;
 using YoteiTasks.Models;
 
@@ -14,6 +15,7 @@ namespace YoteiTasks.Services;
 public class RecurringTaskService : IDisposable
 {
     private readonly Dictionary<string, RecurringTaskConfig> _recurringTasks = new();
+    private readonly Dictionary<string, Timer> _resetTimers = new();
     private readonly NotificationService _notificationService;
     private Timer? _checkTimer;
     private readonly object _lock = new();
@@ -84,7 +86,7 @@ public class RecurringTaskService : IDisposable
     /// <summary>
     /// Mark task as completed and schedule reset if needed
     /// </summary>
-    public void OnTaskCompleted(string nodeId, GraphNode node)
+    public void OnTaskCompleted(string nodeId, GraphNode node, TaskRepository repository)
     {
         lock (_lock)
         {
@@ -111,6 +113,24 @@ public class RecurringTaskService : IDisposable
                 config.LastReset = now;
                 var resetTime = now + config.AutoResetDelay.Value;
                 Console.WriteLine($"  - Автосброс включен, задача будет сброшена в: {resetTime}");
+
+                // Планируем одноразовый сброс состояния
+                if (_resetTimers.TryGetValue(nodeId, out var existingTimer))
+                {
+                    existingTimer.Dispose();
+                }
+
+                _resetTimers[nodeId] = new Timer(_ =>
+                {
+                    try
+                    {
+                        ResetTask(nodeId, node, repository, DateTimeOffset.Now);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[RecurringTaskService] Ошибка при автосбросе задачи {nodeId}: {ex.Message}");
+                    }
+                }, null, config.AutoResetDelay.Value, Timeout.InfiniteTimeSpan);
             }
         }
     }
@@ -155,14 +175,7 @@ public class RecurringTaskService : IDisposable
                     Console.WriteLine($"  - Время сброса: {now}");
                     Console.WriteLine($"  - Задержка была: {config.AutoResetDelay?.TotalMinutes ?? 0} мин");
                     
-                    node.TaskNode.SetStatusSecure(YoteiLib.Core.TaskStatus.InProgress);
-                    
-                    _notificationService.ShowInfo($"Задача '{node.Label}' сброшена");
-                    
-                    // Обновляем время последнего сброса
-                    config.LastReset = now;
-                    
-                    return true;
+                    return ResetTask(nodeId, node, repository, now);
                 }
             }
 
@@ -231,6 +244,57 @@ public class RecurringTaskService : IDisposable
 
         Console.WriteLine($"[RecurringTaskService] 📢 Уведомление: {message}");
         _notificationService.ShowWarning(message);
+    }
+
+    private bool ResetTask(string nodeId, GraphNode node, TaskRepository repository, DateTimeOffset resetTime)
+    {
+        lock (_lock)
+        {
+            if (!_recurringTasks.TryGetValue(nodeId, out var config))
+                return false;
+
+            if (node.TaskNode == null || !node.TaskNode.IsCompleted)
+                return false;
+
+            void DoReset()
+            {
+                // Пытаемся снять завершение через репозиторий (сброс IsCompleted + статус)
+                var uncompleted = repository.Uncomplete(node.TaskNode.Id);
+                if (uncompleted == null)
+                {
+                    // Фолбек на прямую установку статуса, если репозиторий не смог
+                    node.TaskNode.SetStatusSecure(YoteiLib.Core.TaskStatus.InProgress);
+                }
+
+                _notificationService.ShowInfo($"Задача '{node.Label}' сброшена");
+
+                // Обновляем время последнего сброса
+                config.LastReset = resetTime;
+
+                // Обновляем визуализацию узла
+                node.SyncFromTaskNode();
+                node.RaiseVisualChanged();
+
+                // Чистим таймер, если он был
+                if (_resetTimers.TryGetValue(nodeId, out var timer))
+                {
+                    timer.Dispose();
+                    _resetTimers.Remove(nodeId);
+                }
+            }
+
+            // Обновляем через UI-поток, чтобы биндинги перерисовались корректно
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                DoReset();
+            }
+            else
+            {
+                Dispatcher.UIThread.Post(DoReset);
+            }
+
+            return true;
+        }
     }
 
     public void Dispose()

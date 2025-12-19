@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("YoteiTasks")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c299e3787c0da6d6b256ad86c383c436c602ef6e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+502fce775c7fdc057fe15e9bedc46cbb7e08f60c")]
 [assembly: System.Reflection.AssemblyProductAttribute("YoteiTasks")]
 [assembly: System.Reflection.AssemblyTitleAttribute("YoteiTasks")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
