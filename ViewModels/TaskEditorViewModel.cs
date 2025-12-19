@@ -24,7 +24,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
     private TaskStatus _selectedStatus;
     private int _priority;
     private string _payload = string.Empty;
-    private DateTime? _deadline;
+    private DateTimeOffset? _deadline;
     private Actor? _selectedActor;
     private GraphNode? _selectedRelationNode;
     private ComboBox? _relationTypeComboBox;
@@ -35,12 +35,20 @@ public class TaskEditorViewModel : INotifyPropertyChanged
     public GraphNode Node => _node;
     
     public bool IsReadOnly => _mainViewModel?.IsReadOnlyMode ?? true;
+    public bool IsTaskLocked => _node.TaskNode?.IsCompleted == true;
+    public bool IsEditorReadOnly => IsReadOnly || IsTaskLocked;
+    public bool CanEditTask => !IsEditorReadOnly;
     
     public string Title
     {
         get => _title;
         set
         {
+            if (!CanEditTask)
+            {
+                OnPropertyChanged();
+                return;
+            }
             if (SetProperty(ref _title, value))
             {
                 if (_node.TaskNode != null)
@@ -59,6 +67,11 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         get => _selectedStatus;
         set
         {
+            if (IsTaskLocked)
+            {
+                OnPropertyChanged();
+                return;
+            }
             if (SetProperty(ref _selectedStatus, value))
             {
                 if (_node.TaskNode != null && _mainViewModel != null)
@@ -84,6 +97,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
                 OnPropertyChanged(nameof(CompleteButtonText));
                 OnPropertyChanged(nameof(CanCompleteTask));
                 OnPropertyChanged(nameof(TaskCompletionInfo));
+                //RefreshEditingState();
             }
         }
     }
@@ -93,6 +107,11 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         get => _priority;
         set
         {
+            if (!CanEditTask)
+            {
+                OnPropertyChanged();
+                return;
+            }
             if (SetProperty(ref _priority, value))
             {
                 if (_node.TaskNode != null)
@@ -112,6 +131,11 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         get => _payload;
         set
         {
+            if (!CanEditTask)
+            {
+                OnPropertyChanged();
+                return;
+            }
             if (SetProperty(ref _payload, value))
             {
                 if (_node.TaskNode != null)
@@ -126,23 +150,21 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         }
     }
 
-    public DateTime? Deadline
+    public DateTimeOffset? Deadline
     {
         get => _deadline;
         set
         {
+            if (!CanEditTask)
+            {
+                OnPropertyChanged();
+                return;
+            }
             if (SetProperty(ref _deadline, value))
             {
                 if (_node.TaskNode != null)
                 {
-                    if (value.HasValue)
-                    {
-                        
-                    }
-                    else
-                    {
-                        
-                    }
+                    _node.TaskNode.Deadline = value ?? DateTimeOffset.MaxValue;
                 }
 
                 _node.SyncFromTaskNode();
@@ -157,6 +179,11 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         get => _selectedActor;
         set
         {
+            if (!CanEditTask)
+            {
+                OnPropertyChanged();
+                return;
+            }
             if (SetProperty(ref _selectedActor, value))
             {
                 if (_node.TaskNode != null && _mainViewModel != null && value != null)
@@ -216,7 +243,6 @@ public class TaskEditorViewModel : INotifyPropertyChanged
             if (_node.TaskNode == null || _mainViewModel == null)
                 return false;
 
-            // Проверяем права на завершение задач
             if (!_mainViewModel.CanCompleteTasks)
                 return false;
 
@@ -262,7 +288,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
             if (taskActor.Id != currentActor.Id)
                 return $"⚠ Задача назначена пользователю {taskActor.Name}. Только он может её завершить.";
 
-            return $"✓ Вы можете завершить эту задачу (назначена вам)";
+            return $"✓ Вы можете завершить эту задачу";
         }
     }
 
@@ -290,10 +316,9 @@ public class TaskEditorViewModel : INotifyPropertyChanged
             _selectedStatus = node.TaskNode.Status;
             _priority = node.TaskNode.Priority;
             _payload = node.TaskNode.Payload ?? string.Empty;
-            if (node.TaskNode.Deadline != DateTimeOffset.MaxValue)
-            {
-                _deadline = node.TaskNode.Deadline.Date;
-            }
+            _deadline = node.TaskNode.Deadline != DateTimeOffset.MaxValue
+                ? node.TaskNode.Deadline
+                : null;
             _selectedActor = node.TaskNode.Meta?.PerfomedBy;
         }
         else
@@ -342,10 +367,13 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         CompleteTaskCommand = new RelayCommand(_ => ToggleComplete());
         AddResourceCommand = new RelayCommand(_ => AddResource());
         ConfigureRecurringCommand = new RelayCommand(_ => ConfigureRecurring());
+        //RefreshEditingState();
     }
 
     private void AddRelation()
     {
+        if (!CanEditTask)
+            return;
         if (_selectedRelationNode == null || _node.TaskNode == null || _mainViewModel == null)
             return;
 
@@ -369,6 +397,8 @@ public class TaskEditorViewModel : INotifyPropertyChanged
     
     private void AddResource()
     {
+        if (!CanEditTask)
+            return;
         if (_selectedResource == null || _resourceAmount <= 0)
             return;
         
@@ -409,6 +439,8 @@ public class TaskEditorViewModel : INotifyPropertyChanged
     
     private void DeleteResourceUsage(TaskResourceUsageViewModel viewModel)
     {
+        if (!CanEditTask)
+            return;
         _node.ResourceUsages.Remove(viewModel.Model);
         _resourceUsages.Remove(viewModel);
         _mainViewModel?.SyncGraphToRepository(_currentGraph);
@@ -417,6 +449,8 @@ public class TaskEditorViewModel : INotifyPropertyChanged
     
     private void OnResourceAmountChanged()
     {
+        if (!CanEditTask)
+            return;
         _mainViewModel?.SyncGraphToRepository(_currentGraph);
         _mainViewModel?.Save();
     }
@@ -426,7 +460,6 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         if (_node.TaskNode == null || _mainViewModel == null)
             return;
 
-        // Проверяем права на завершение задачи
         if (!CanCompleteTask)
         {
             var currentActor = _mainViewModel.CurrentActor;
@@ -530,6 +563,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CompleteButtonText));
         OnPropertyChanged(nameof(CanCompleteTask));
         OnPropertyChanged(nameof(TaskCompletionInfo));
+        //RefreshEditingState();
     }
 
     private void ConfigureRecurring()

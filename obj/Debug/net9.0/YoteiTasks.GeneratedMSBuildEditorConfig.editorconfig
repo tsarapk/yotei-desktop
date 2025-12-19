@@ -48,8 +48,14 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 [/media/vanya/SSD/Projects/Yotei/YoteiTasks/Views/ProjectEditorView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[/media/vanya/SSD/Projects/Yotei/YoteiTasks/Views/RecurringTaskConfigView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [/media/vanya/SSD/Projects/Yotei/YoteiTasks/Views/ResourceReportView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
 [/media/vanya/SSD/Projects/Yotei/YoteiTasks/Views/TaskEditorView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/media/vanya/SSD/Projects/Yotei/YoteiTasks/Views/TaskListView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

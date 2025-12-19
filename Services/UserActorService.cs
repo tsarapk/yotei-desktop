@@ -15,6 +15,8 @@ public interface IUserActorService
     void SetActorCredentials(Actor actor, string username, string password);
     
     Actor? AuthenticateActor(string username, string password);
+
+    Actor RegisterActor(string username, string password);
     
     User GetOrCreateUser(Actor actor);
     
@@ -24,10 +26,12 @@ public interface IUserActorService
 public class UserActorService : IUserActorService
 {
     private readonly IEnumerable<Actor> _actors;
+    private readonly Func<Actor>? _createActor;
     
-    public UserActorService(IEnumerable<Actor> actors)
+    public UserActorService(IEnumerable<Actor> actors, Func<Actor>? createActor = null)
     {
         _actors = actors;
+        _createActor = createActor;
     }
     
     public void SetActorCredentials(Actor actor, string username, string password)
@@ -60,6 +64,27 @@ public class UserActorService : IUserActorService
         
         var passwordHash = HashPassword(password);
         return passwordHash == actor.PasswordHash ? actor : null;
+    }
+
+    public Actor RegisterActor(string username, string password)
+    {
+        if (_createActor == null)
+            throw new InvalidOperationException("Actor creation is not configured for this service");
+
+        if (string.IsNullOrWhiteSpace(username))
+            throw new ArgumentException("Username cannot be empty", nameof(username));
+
+        if (string.IsNullOrWhiteSpace(password))
+            throw new ArgumentException("Password cannot be empty", nameof(password));
+
+        var existingActor = _actors.FirstOrDefault(a => a.Username == username);
+        if (existingActor != null)
+            throw new InvalidOperationException($"Username '{username}' is already taken");
+
+        var actor = _createActor();
+        actor.SetName(username);
+        SetActorCredentials(actor, username, password);
+        return actor;
     }
     
     public User GetOrCreateUser(Actor actor)

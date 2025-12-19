@@ -23,13 +23,8 @@ public class RecurringTaskService : IDisposable
     {
         _notificationService = notificationService;
         
-        // Проверяем каждую минуту
         _checkTimer = new Timer(CheckTasks, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
     }
-
-    /// <summary>
-    /// Add or update recurring task configuration
-    /// </summary>
     public void ConfigureRecurringTask(string nodeId, RecurringTaskConfig config)
     {
         lock (_lock)

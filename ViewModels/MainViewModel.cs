@@ -461,7 +461,6 @@ public class MainViewModel : INotifyPropertyChanged
     public void OnProjectCreated(Project? project)
     {
         IsProjectCreationPopupOpen = false;
-        
         if (project != null)
         {
             _projects.Add(project);
@@ -711,6 +710,14 @@ public class MainViewModel : INotifyPropertyChanged
         IsLoginPopupOpen = false;
         if (actor != null)
         {
+            // Если актор только что зарегистрирован, он уже создан в репозитории,
+            // но UI-список может ещё не содержать его.
+            if (!_actors.Any(a => a.Model.Id == actor.Id))
+            {
+                _actors.Add(new ActorViewModel(actor, DeleteActor, _userActorService));
+                SaveInternal(showNotification: false);
+            }
+
             CurrentActor = actor;
             
             // Устанавливаем текущего актора в репозитории Yotei
@@ -734,17 +741,12 @@ public class MainViewModel : INotifyPropertyChanged
         }
         
         var actorName = CurrentActor.Name;
-        
-        // Возвращаемся к SuperUser после выхода
-        var superUser = _superUserService.GetOrCreateSuperUser();
-        CurrentActor = superUser;
-        if (superUser != null)
-        {
-            _yotei.Actors.SetCurrent(superUser);
-        }
-        
+
+        CurrentActor = null;
         UpdatePermissions();
         _notificationService.ShowInfo($"Вы вышли из аккаунта {actorName}");
+
+        IsLoginPopupOpen = true;
     }
 
     private void UpdatePermissions()
@@ -754,6 +756,18 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void DeleteActor(ActorViewModel actorViewModel)
     {
+        if (!IsSuperUser)
+        {
+            _notificationService.ShowError("Только SuperUser может удалять акторов");
+            return;
+        }
+
+        if (_superUserService.IsSuperUser(actorViewModel.Model))
+        {
+            _notificationService.ShowError("SuperUser не может быть удалён");
+            return;
+        }
+
         _yotei.Actors.Delete(actorViewModel.Model);
         Actors.Remove(actorViewModel);
     }
@@ -822,6 +836,11 @@ public class MainViewModel : INotifyPropertyChanged
 
     public void Save()
     {
+        SaveInternal(showNotification: true);
+    }
+
+    private void SaveInternal(bool showNotification)
+    {
         try
         {
             var resources = _resources.Select(vm => vm.Model).ToList();
@@ -829,12 +848,18 @@ public class MainViewModel : INotifyPropertyChanged
             var roles = _yotei.Roles.GetAll();
             var saveData = SaveDataConverter.ToSaveData(_graphs, _selectedGraph, _yotei.Tasks, resources, actors, roles, _projects, _selectedProject, _superUserService);
             _saveService.Save(saveData);
-            _notificationService.ShowSuccess("Данные успешно сохранены");
+            if (showNotification)
+            {
+                _notificationService.ShowSuccess("Данные успешно сохранены");
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Ошибка при сохранении: {ex}");
-            _notificationService.ShowError($"Ошибка при сохранении: {ex.Message}");
+            if (showNotification)
+            {
+                _notificationService.ShowError($"Ошибка при сохранении: {ex.Message}");
+            }
         }
     }
 

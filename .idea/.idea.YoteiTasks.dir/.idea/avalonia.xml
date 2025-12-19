@@ -3,6 +3,7 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="App.axaml" value="YoteiTasks.csproj" />
         <entry key="MainWindow.axaml" value="YoteiTasks.csproj" />
         <entry key="Views/GraphCanvas.axaml" value="YoteiTasks.csproj" />
         <entry key="Views/LoginPopupView.axaml" value="YoteiTasks.csproj" />

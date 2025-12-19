@@ -14,7 +14,7 @@
             Padding="30"
             MinWidth="350">
         <StackPanel Spacing="20">
-            <TextBlock Text="Вход в систему" 
+            <TextBlock Text="{Binding Title}" 
                        FontSize="20" 
                        FontWeight="Bold" 
                        Foreground="White"
@@ -38,6 +38,18 @@
                          PasswordChar="•"
                          FontSize="14"
                          Padding="10,8" />
+
+                <TextBlock Text="Подтверждение пароля" 
+                           Foreground="White"
+                           FontSize="13"
+                           Margin="0,8,0,0"
+                           IsVisible="{Binding IsRegisterMode}" />
+                <TextBox Text="{Binding ConfirmPassword, Mode=TwoWay}" 
+                         Watermark="Повторите пароль" 
+                         PasswordChar="•"
+                         FontSize="14"
+                         Padding="10,8"
+                         IsVisible="{Binding IsRegisterMode}" />
                 
                 <TextBlock Text="{Binding ErrorMessage}" 
                            Foreground="#FF6B6B" 
@@ -59,9 +71,34 @@
                 <Button Content="Войти" 
                         Command="{Binding LoginCommand}" 
                         IsEnabled="{Binding !IsLoading}"
+                        IsVisible="{Binding !IsRegisterMode}"
                         Classes="accent"
                         Padding="20,8"
                         FontSize="13" />
+                <Button Content="Зарегистрироваться" 
+                        Command="{Binding RegisterCommand}" 
+                        IsEnabled="{Binding !IsLoading}"
+                        IsVisible="{Binding IsRegisterMode}"
+                        Classes="accent"
+                        Padding="20,8"
+                        FontSize="13" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Spacing="10">
+                <Button Content="Нет аккаунта? Регистрация" 
+                        Command="{Binding ToggleModeCommand}"
+                        IsVisible="{Binding !IsRegisterMode}"
+                        IsEnabled="{Binding !IsLoading}"
+                        Padding="10,6"
+                        FontSize="12" />
+                <Button Content="У меня уже есть аккаунт" 
+                        Command="{Binding ToggleModeCommand}"
+                        IsVisible="{Binding IsRegisterMode}"
+                        IsEnabled="{Binding !IsLoading}"
+                        Padding="10,6"
+                        FontSize="12" />
             </StackPanel>
             
             <ProgressBar IsIndeterminate="True" 

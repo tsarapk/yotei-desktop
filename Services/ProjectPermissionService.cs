@@ -128,9 +128,6 @@ public class ProjectPermissions
         CanViewProject || CanEditProject || CanDeleteProject ||
         CanCreateTasks || CanEditTasks || CanDeleteTasks || CanCompleteTasks ||
         CanManageUsers || CanManageRoles;
-
-    
-    
     
     public bool IsReadOnly => CanViewProject && !CanEditProject && !CanEditTasks && !CanCreateTasks;
 }

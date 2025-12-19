@@ -69,7 +69,6 @@ public class Project : INotifyPropertyChanged
         
         _actorRoles.RemoveAll(ar => ar.ActorId == actorId);
         
-        
         _actorRoles.Add(new ProjectActorRole
         {
             ActorId = actorId,

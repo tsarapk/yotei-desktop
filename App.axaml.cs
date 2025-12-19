@@ -19,7 +19,7 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         
-        var saveService = new JsonSaveService();
+        var saveService = new SqliteSaveService();
         AuthService = new AuthService(saveService);
         
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -29,7 +29,7 @@ public partial class App : Application
             
             
             var yotei = new Yotei();
-            var userActorService = new UserActorService(yotei.Actors);
+            var userActorService = new UserActorService(yotei.Actors, () => yotei.Actors.Create());
             var superUserService = new SuperUserService(yotei, userActorService);
             
             

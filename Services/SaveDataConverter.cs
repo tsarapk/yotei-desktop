@@ -519,7 +519,11 @@ public static class SaveDataConverter
             
             if (nodeSaveData.Deadline.HasValue)
             {
-                
+                taskNode.Deadline = nodeSaveData.Deadline.Value;
+            }
+            else
+            {
+                taskNode.Deadline = DateTimeOffset.MaxValue;
             }
             
             if (nodeSaveData.IsCompleted && !taskNode.IsCompleted)
