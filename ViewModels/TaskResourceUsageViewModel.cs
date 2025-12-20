@@ -9,9 +9,9 @@ using YoteiTasks.Models;
 
 namespace YoteiTasks.ViewModels;
 
-/// <summary>
-/// ViewModel for managing resource usage in task editor
-/// </summary>
+
+
+
 public class TaskResourceUsageViewModel : INotifyPropertyChanged
 {
     private readonly TaskResourceUsage _model;

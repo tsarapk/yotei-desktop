@@ -98,7 +98,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
                 OnPropertyChanged(nameof(CompleteButtonText));
                 OnPropertyChanged(nameof(CanCompleteTask));
                 OnPropertyChanged(nameof(TaskCompletionInfo));
-                //RefreshEditingState();
+                
             }
         }
     }
@@ -247,18 +247,18 @@ public class TaskEditorViewModel : INotifyPropertyChanged
             if (!_mainViewModel.CanCompleteTasks)
                 return false;
 
-            // Если задача уже завершена, можем её отменить
+            
             if (_node.TaskNode.IsCompleted)
                 return true;
 
-            // Проверяем, что задача назначена текущему пользователю (если не назначена — позволяем автоназначение)
+            
             var currentActor = _mainViewModel.CurrentActor;
             if (currentActor == null)
                 return false;
 
             var taskActor = _node.TaskNode.Meta?.PerfomedBy;
             if (taskActor == null)
-                return true; // разрешаем, автоназначим в ToggleComplete
+                return true; 
 
             return taskActor.Id == currentActor.Id;
         }
@@ -327,7 +327,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
             _title = node.Label;
         }
 
-        // Автоматически назначаем задачу текущему пользователю, если она не назначена
+     
         if (node.TaskNode != null && node.TaskNode.Meta?.PerfomedBy == null && mainViewModel?.CurrentActor != null)
         {
             mainViewModel.Yotei.Tasks.BindActor(node.TaskNode, mainViewModel.CurrentActor);
@@ -342,7 +342,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
                 AvailableActors.Add(actor);
             }
             
-            // Load available resources
+            
             foreach (var resource in mainViewModel.Yotei.Resources.GetAll())
             {
                 AvailableResources.Add(resource);
@@ -358,7 +358,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
             }
         }
         
-        // Load existing resource usages
+        
         foreach (var resourceUsage in node.ResourceUsages)
         {
             _resourceUsages.Add(new TaskResourceUsageViewModel(resourceUsage, DeleteResourceUsage, OnResourceAmountChanged));
@@ -405,11 +405,11 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         
         Console.WriteLine($"[TaskEditor] Добавление ресурса '{_selectedResource.Name}' (количество: {_resourceAmount}) к задаче '{_node.Label}'");
         
-        // Check if resource already exists in the list
+    
         var existingUsage = _node.ResourceUsages.FirstOrDefault(ru => ru.Resource.Id == _selectedResource.Id);
         if (existingUsage != null)
         {
-            // Update existing amount
+     
             existingUsage.Amount += _resourceAmount;
             var existingViewModel = _resourceUsages.FirstOrDefault(vm => vm.Model == existingUsage);
             if (existingViewModel != null)
@@ -420,14 +420,14 @@ public class TaskEditorViewModel : INotifyPropertyChanged
         }
         else
         {
-            // Add new resource usage
+            
             var resourceUsage = new TaskResourceUsage(_selectedResource, _resourceAmount);
             _node.ResourceUsages.Add(resourceUsage);
             _resourceUsages.Add(new TaskResourceUsageViewModel(resourceUsage, DeleteResourceUsage, OnResourceAmountChanged));
             Console.WriteLine($"[TaskEditor] Добавлен новый ресурс. Всего ресурсов в задаче: {_node.ResourceUsages.Count}");
         }
         
-        // Reset selection
+        
         _selectedResource = null;
         _resourceAmount = 0;
         OnPropertyChanged(nameof(SelectedResource));
@@ -502,7 +502,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
             catch (Exception ex)
             {
                 Console.WriteLine($"Исключение при отмене завершения задачи: {ex.Message}");
-                // Пытаемся установить статус напрямую
+                
                 _node.TaskNode.SetStatusSecure(TaskStatus.InProgress);
                 Console.WriteLine($"Задача '{_node.TaskNode.Title}' возвращена в работу (через SetStatusSecure)");
             }
@@ -515,7 +515,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
             {
                 Console.WriteLine($"Задача '{_node.TaskNode.Title}' успешно завершена пользователем {_mainViewModel.CurrentActor?.Name}");
                 
-                // Уведомляем RecurringTaskService о выполнении задачи
+                
                 _mainViewModel.OnTaskCompleted(_node);
             }
             else if (result == Result.ThereAreUncompletedTasks && uncompleted != null && uncompleted.Count > 0)
@@ -524,7 +524,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
                 NotificationService.Instance.ShowError($"Сначала необходимо выполнить предыдущие задачи ({uncompleted.Count})");
       
                 
-                // Получаем названия незавершенных задач
+                
                 var uncompletedTasks = new List<string>();
                 foreach (var taskId in uncompleted)
                 {
@@ -554,12 +554,12 @@ public class TaskEditorViewModel : INotifyPropertyChanged
             }
         }
 
-        // Обновляем визуализацию и синхронизируем с репозиторием
+     
         _node.SyncFromTaskNode();
         _node.RaiseVisualChanged();
         _mainViewModel?.SyncGraphToRepository(_currentGraph);
 
-        // Обновляем статус в UI
+       
         _selectedStatus = _node.TaskNode.Status;
         OnPropertyChanged(nameof(SelectedStatus));
         OnPropertyChanged(nameof(CompleteButtonText));

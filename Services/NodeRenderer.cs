@@ -166,7 +166,7 @@ public class NodeRenderer
             labelText = $"[{node.TaskNode.Priority}] {labelText}";
         }
         
-        // Добавляем индикатор завершенной задачи
+        
         if (node.TaskNode != null && node.TaskNode.IsCompleted)
         {
             labelText = $"✓ {labelText}";
@@ -180,7 +180,7 @@ public class NodeRenderer
         if (node.TaskNode == null)
             return LocalColors.NodeBackDefault;
 
-        // Для завершенных задач используем более темный фон
+        
         if (node.TaskNode.IsCompleted)
             return new SolidColorBrush(Color.FromRgb(40, 40, 40));
 
@@ -192,7 +192,7 @@ public class NodeRenderer
         if (node.TaskNode == null)
             return 1.0;
 
-        // Завершенные задачи отображаются полупрозрачными (неактивными)
+        
         if (node.TaskNode.IsCompleted)
             return 0.6;
 

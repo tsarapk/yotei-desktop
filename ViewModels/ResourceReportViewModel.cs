@@ -9,9 +9,9 @@ using YoteiTasks.Models;
 
 namespace YoteiTasks.ViewModels;
 
-/// <summary>
-/// ViewModel for resource usage report
-/// </summary>
+
+
+
 public class ResourceReportViewModel : INotifyPropertyChanged
 {
     private readonly ResourceUsageReport _report;
@@ -50,9 +50,9 @@ public class ResourceReportViewModel : INotifyPropertyChanged
     }
 }
 
-/// <summary>
-/// ViewModel for individual task allocation
-/// </summary>
+
+
+
 public class TaskAllocationViewModel : INotifyPropertyChanged
 {
     private readonly TaskResourceAllocation _allocation;

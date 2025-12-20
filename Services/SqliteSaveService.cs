@@ -8,9 +8,9 @@ using YoteiTasks.Models;
 
 namespace YoteiTasks.Services;
 
-/// <summary>
-/// SQLite implementation of ISaveService for persisting application data
-/// </summary>
+
+
+
 public class SqliteSaveService : ISaveService
 {
     private readonly string _databasePath;
@@ -163,27 +163,27 @@ public class SqliteSaveService : ISaveService
 
             try
             {
-                // Clear existing data
+                
                 ClearAllTables(connection, transaction);
 
-                // Save entities that other tables depend on
+                
                 SaveResources(connection, transaction, data.Resources);
                 SaveActors(connection, transaction, data.Actors);
                 SaveRoles(connection, transaction, data.Roles);
 
-                // Save graphs (nodes depend on resources for TaskResourceUsages)
+                
                 SaveGraphs(connection, transaction, data.Graphs);
 
-                // Save projects (depend on graphs, actors, roles)
+                
                 SaveProjects(connection, transaction, data.Projects);
 
-                // Save Settings
+                
                 SaveSettings(connection, transaction, data.SelectedGraphId, data.SelectedProjectId);
 
                 transaction.Commit();
                 Console.WriteLine($"[SqliteSaveService] Data successfully saved to: {_databasePath}");
                 
-                // Log statistics
+                
                 int totalResourceUsages = 0;
                 foreach (var graph in data.Graphs)
                 {
@@ -230,12 +230,12 @@ public class SqliteSaveService : ISaveService
                 Roles = LoadRoles(connection)
             };
 
-            // Load settings
+            
             LoadSettings(connection, saveData);
 
             Console.WriteLine($"[SqliteSaveService] Data successfully loaded from: {_databasePath}");
             
-            // Log statistics
+            
             int totalResourceUsages = 0;
             foreach (var graph in saveData.Graphs)
             {
@@ -275,7 +275,7 @@ public class SqliteSaveService : ISaveService
     {
         foreach (var graph in graphs)
         {
-            // Save graph
+            
             var graphCommand = connection.CreateCommand();
             graphCommand.Transaction = transaction;
             graphCommand.CommandText = "INSERT INTO Graphs (Id, Name) VALUES (@Id, @Name)";
@@ -283,7 +283,7 @@ public class SqliteSaveService : ISaveService
             graphCommand.Parameters.AddWithValue("@Name", graph.Name);
             graphCommand.ExecuteNonQuery();
 
-            // Save nodes
+            
             foreach (var node in graph.Nodes)
             {
                 var nodeCommand = connection.CreateCommand();
@@ -307,7 +307,7 @@ public class SqliteSaveService : ISaveService
                 nodeCommand.Parameters.AddWithValue("@IsCompleted", node.IsCompleted ? 1 : 0);
                 nodeCommand.ExecuteNonQuery();
 
-                // Save resource usages for this node
+                
                 foreach (var resourceUsage in node.ResourceUsages)
                 {
                     var resourceUsageCommand = connection.CreateCommand();
@@ -323,7 +323,7 @@ public class SqliteSaveService : ISaveService
                 }
             }
 
-            // Save edges
+            
             foreach (var edge in graph.Edges)
             {
                 var edgeCommand = connection.CreateCommand();
@@ -356,7 +356,7 @@ public class SqliteSaveService : ISaveService
             command.Parameters.AddWithValue("@GraphId", (object?)project.GraphId ?? DBNull.Value);
             command.ExecuteNonQuery();
 
-            // Save project actor roles
+            
             foreach (var actorRole in project.ActorRoles)
             {
                 var actorRoleCommand = connection.CreateCommand();
@@ -413,7 +413,7 @@ public class SqliteSaveService : ISaveService
     {
         foreach (var role in roles)
         {
-            // Save role
+            
             var roleCommand = connection.CreateCommand();
             roleCommand.Transaction = transaction;
             roleCommand.CommandText = @"
@@ -425,7 +425,7 @@ public class SqliteSaveService : ISaveService
             roleCommand.Parameters.AddWithValue("@Strength", role.Strength);
             roleCommand.ExecuteNonQuery();
 
-            // Save role privileges
+            
             foreach (var privilege in role.Privileges)
             {
                 var privilegeCommand = connection.CreateCommand();
@@ -490,7 +490,7 @@ public class SqliteSaveService : ISaveService
         }
         graphReader.Close();
 
-        // Load nodes for each graph
+        
         foreach (var graph in graphs)
         {
             var nodeCommand = connection.CreateCommand();
@@ -525,7 +525,7 @@ public class SqliteSaveService : ISaveService
             }
             nodeReader.Close();
 
-            // Load resource usages for each node
+            
             foreach (var node in graph.Nodes)
             {
                 var resourceUsageCommand = connection.CreateCommand();
@@ -547,7 +547,7 @@ public class SqliteSaveService : ISaveService
                 }
             }
 
-            // Load edges for this graph
+            
             var edgeCommand = connection.CreateCommand();
             edgeCommand.CommandText = @"
                 SELECT SourceId, TargetId, EdgeType
@@ -591,7 +591,7 @@ public class SqliteSaveService : ISaveService
         }
         reader.Close();
 
-        // Load actor roles for each project
+        
         foreach (var project in projects)
         {
             var actorRoleCommand = connection.CreateCommand();
@@ -682,7 +682,7 @@ public class SqliteSaveService : ISaveService
         }
         roleReader.Close();
 
-        // Load privileges for each role
+        
         foreach (var role in roles)
         {
             var privilegeCommand = connection.CreateCommand();

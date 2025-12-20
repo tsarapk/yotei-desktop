@@ -6,10 +6,6 @@ using System.Windows.Input;
 using YoteiTasks.Models;
 
 namespace YoteiTasks.ViewModels;
-
-/// <summary>
-/// ViewModel for configuring recurring tasks
-/// </summary>
 public class RecurringTaskConfigViewModel : INotifyPropertyChanged
 {
     private readonly RecurringTaskConfig _config;
@@ -146,7 +142,7 @@ public class RecurringTaskConfigViewModel : INotifyPropertyChanged
 
     private void Save()
     {
-        // Вычисляем первую дату выполнения
+    
         if (_config.RecurrenceType != RecurrenceType.None && _config.NextDueDate == null)
         {
             _config.NextDueDate = _config.CalculateNextDueDate(DateTimeOffset.Now);

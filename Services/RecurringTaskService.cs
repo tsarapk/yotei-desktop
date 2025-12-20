@@ -9,9 +9,7 @@ using YoteiTasks.Models;
 
 namespace YoteiTasks.Services;
 
-/// <summary>
-/// Service for managing recurring tasks and notifications
-/// </summary>
+
 public class RecurringTaskService : IDisposable
 {
     private readonly Dictionary<string, RecurringTaskConfig> _recurringTasks = new();
@@ -28,9 +26,7 @@ public class RecurringTaskService : IDisposable
         _checkTimer = new Timer(CheckTasks, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
     }
     
-    /// <summary>
-    /// Делегат для выполнения сброса на главном UI-потоке (назначается из ViewModel)
-    /// </summary>
+
     public Action<string>? MainThreadReset { get; set; }
     public void ConfigureRecurringTask(string nodeId, RecurringTaskConfig config)
     {
@@ -45,7 +41,7 @@ public class RecurringTaskService : IDisposable
             
             _recurringTasks[nodeId] = config;
             
-            // Вычисляем первую дату выполнения если её нет
+         
             if (config.NextDueDate == null && config.RecurrenceType != RecurrenceType.None)
             {
                 config.NextDueDate = config.CalculateNextDueDate(DateTimeOffset.Now);
@@ -54,9 +50,6 @@ public class RecurringTaskService : IDisposable
         }
     }
 
-    /// <summary>
-    /// Remove recurring task configuration
-    /// </summary>
     public void RemoveRecurringTask(string nodeId)
     {
         lock (_lock)
@@ -66,9 +59,7 @@ public class RecurringTaskService : IDisposable
         }
     }
 
-    /// <summary>
-    /// Get recurring task configuration
-    /// </summary>
+
     public RecurringTaskConfig? GetRecurringTask(string nodeId)
     {
         lock (_lock)
@@ -77,9 +68,7 @@ public class RecurringTaskService : IDisposable
         }
     }
 
-    /// <summary>
-    /// Get all recurring tasks
-    /// </summary>
+
     public List<RecurringTaskConfig> GetAllRecurringTasks()
     {
         lock (_lock)
@@ -88,9 +77,7 @@ public class RecurringTaskService : IDisposable
         }
     }
 
-    /// <summary>
-    /// Mark task as completed and schedule reset if needed
-    /// </summary>
+  
     public void OnTaskCompleted(string nodeId, GraphNode node, TaskRepository repository)
     {
         lock (_lock)
@@ -105,21 +92,20 @@ public class RecurringTaskService : IDisposable
 
             var now = DateTimeOffset.Now;
 
-            // Если задача повторяющаяся, вычисляем следующую дату
+       
             if (config.RecurrenceType != RecurrenceType.None)
             {
                 config.NextDueDate = config.CalculateNextDueDate(now);
                 Console.WriteLine($"  - Следующая дата выполнения: {config.NextDueDate}");
             }
 
-            // Если включен автосброс, запоминаем время выполнения
             if (config.AutoReset && config.AutoResetDelay.HasValue)
             {
                 config.LastReset = now;
                 var resetTime = now + config.AutoResetDelay.Value;
                 Console.WriteLine($"  - Автосброс включен, задача будет сброшена в: {resetTime}");
 
-                // Планируем одноразовый сброс состояния
+             
                 if (_resetTimers.TryGetValue(nodeId, out var existingTimer))
                 {
                     existingTimer.Dispose();
@@ -140,9 +126,7 @@ public class RecurringTaskService : IDisposable
         }
     }
 
-    /// <summary>
-    /// Check if task should be reset and reset it
-    /// </summary>
+   
     public bool CheckAndResetTask(string nodeId, GraphNode node, TaskRepository repository)
     {
         lock (_lock)
@@ -153,7 +137,7 @@ public class RecurringTaskService : IDisposable
             var now = DateTimeOffset.Now;
             var isCompleted = node.TaskNode?.IsCompleted ?? false;
             
-            // Детальное логирование для отладки
+          
             if (config.AutoReset && isCompleted)
             {
                 Console.WriteLine($"[RecurringTaskService] 🔍 Проверка сброса: NodeId={nodeId}");
@@ -173,7 +157,7 @@ public class RecurringTaskService : IDisposable
             
             if (config.ShouldReset(now, isCompleted))
             {
-                // Сбрасываем задачу (устанавливаем статус InProgress)
+                
                 if (node.TaskNode != null && node.TaskNode.IsCompleted)
                 {
                     Console.WriteLine($"[RecurringTaskService] ⏰ СБРОС ЗАДАЧИ: NodeId={nodeId}, Label='{node.Label}'");
@@ -188,9 +172,7 @@ public class RecurringTaskService : IDisposable
         }
     }
 
-    /// <summary>
-    /// Periodic check for notifications and resets
-    /// </summary>
+
     private void CheckTasks(object? state)
     {
         if (_disposed)
@@ -216,7 +198,7 @@ public class RecurringTaskService : IDisposable
 
             foreach (var (nodeId, config) in tasksToProcess)
             {
-                // Проверяем нужно ли отправить уведомление
+            
                 if (config.ShouldNotify(now))
                 {
                     Console.WriteLine($"  - 🔔 Отправка уведомления для задачи: NodeId={nodeId}");
@@ -224,13 +206,13 @@ public class RecurringTaskService : IDisposable
                     config.LastNotification = now;
                 }
 
-                // Также проверяем автосбросы, если приложение открыто
+              
                 if (config.AutoReset && config.AutoResetDelay.HasValue && config.LastReset.HasValue)
                 {
                     var shouldReset = now >= config.LastReset.Value + config.AutoResetDelay.Value;
                     if (shouldReset && MainThreadReset != null)
                     {
-                        // Запрашиваем сброс на UI-потоке через делегат
+                        
                         MainThreadReset(nodeId);
                     }
                 }
@@ -243,9 +225,7 @@ public class RecurringTaskService : IDisposable
         }
     }
 
-    /// <summary>
-    /// Send notification for task
-    /// </summary>
+
     private void SendNotification(string nodeId, RecurringTaskConfig config)
     {
         var message = config.RecurrenceType switch
@@ -274,24 +254,24 @@ public class RecurringTaskService : IDisposable
 
             void DoReset()
             {
-                // Пытаемся снять завершение через репозиторий (сброс IsCompleted + статус)
+              
                 var uncompleted = repository.Uncomplete(node.TaskNode.Id);
                 if (uncompleted == null)
                 {
-                    // Фолбек на прямую установку статуса, если репозиторий не смог
+                  
                     node.TaskNode.SetStatusSecure(YoteiLib.Core.TaskStatus.InProgress);
                 }
 
                 _notificationService.ShowInfo($"Задача '{node.Label}' сброшена");
 
-                // Обновляем время последнего сброса
+            
                 config.LastReset = resetTime;
 
-                // Обновляем визуализацию узла
+              
                 node.SyncFromTaskNode();
                 node.RaiseVisualChanged();
 
-                // Чистим таймер, если он был
+                
                 if (_resetTimers.TryGetValue(nodeId, out var timer))
                 {
                     timer.Dispose();
@@ -299,7 +279,6 @@ public class RecurringTaskService : IDisposable
                 }
             }
 
-            // Обновляем через UI-поток, чтобы биндинги перерисовались корректно
             if (Dispatcher.UIThread.CheckAccess())
             {
                 DoReset();

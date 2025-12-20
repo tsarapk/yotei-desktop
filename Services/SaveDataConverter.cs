@@ -201,7 +201,7 @@ public static class SaveDataConverter
             }
         }
         
-        // Save resource usages
+        
         foreach (var resourceUsage in node.ResourceUsages)
         {
             nodeSaveData.ResourceUsages.Add(new TaskResourceUsageSaveData
@@ -273,7 +273,7 @@ public static class SaveDataConverter
         var projects = new List<Project>();
 
         
-        // Create a mapping from saved resource IDs to actual resources
+        
         var resourceIdMap = new Dictionary<string, Resource>();
         
         if (saveData.Resources != null)
@@ -281,12 +281,12 @@ public static class SaveDataConverter
             Console.WriteLine($"[SaveDataConverter] Загрузка {saveData.Resources.Count} ресурсов...");
             foreach (var resourceData in saveData.Resources)
             {
-                // Try to find existing resource by ID first
+                
                 var existingResource = yotei.Resources.GetAll().FirstOrDefault(r => r.Id.ToString() == resourceData.Id);
                 
                 if (existingResource != null)
                 {
-                    // Update existing resource
+                    
                     existingResource.SetName(resourceData.Name);
                     existingResource.SetValue(resourceData.Value);
                     resources.Add(existingResource);
@@ -295,12 +295,12 @@ public static class SaveDataConverter
                 }
                 else
                 {
-                    // Create new resource - ID will be different
+                    
                     var resource = yotei.Resources.Create();
                     resource.SetName(resourceData.Name);
                     resource.SetValue(resourceData.Value);
                     
-                    // Map the saved ID to the new resource
+                    
                     resources.Add(resource);
                     resourceIdMap[resourceData.Id] = resource;
                     Console.WriteLine($"[SaveDataConverter] Создан новый ресурс '{resourceData.Name}' (Сохраненный ID: {resourceData.Id}, Новый ID: {resource.Id})");
@@ -544,7 +544,7 @@ public static class SaveDataConverter
             node = new GraphNode(nodeSaveData.Id, nodeSaveData.Label, nodeSaveData.X, nodeSaveData.Y);
         }
         
-        // Load resource usages
+        
         if (nodeSaveData.ResourceUsages != null && nodeSaveData.ResourceUsages.Count > 0)
         {
             Console.WriteLine($"[SaveDataConverter] Загрузка {nodeSaveData.ResourceUsages.Count} использований ресурсов для узла '{nodeSaveData.Label}'");
@@ -552,13 +552,13 @@ public static class SaveDataConverter
             {
                 Resource? resource = null;
                 
-                // First try to find resource using the ID map (handles ID changes)
+                
                 if (resourceIdMap != null && resourceIdMap.TryGetValue(resourceUsageData.ResourceId, out var mappedResource))
                 {
                     resource = mappedResource;
                     Console.WriteLine($"[SaveDataConverter] Найден ресурс через маппинг: '{resource.Name}' (Сохраненный ID: {resourceUsageData.ResourceId}, Текущий ID: {resource.Id})");
                 }
-                // Fallback: try to find by current ID
+                
                 else if (resources != null)
                 {
                     resource = resources.FirstOrDefault(r => r.Id.ToString() == resourceUsageData.ResourceId);

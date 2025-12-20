@@ -3,9 +3,9 @@ using YoteiLib.Core;
 
 namespace YoteiTasks.Models;
 
-/// <summary>
-/// Filter criteria for tasks
-/// </summary>
+
+
+
 public class TaskFilter
 {
     public TaskStatus? Status { get; set; }
@@ -24,9 +24,9 @@ public class TaskFilter
         string.IsNullOrWhiteSpace(SearchText);
 }
 
-/// <summary>
-/// Sort criteria for tasks
-/// </summary>
+
+
+
 public enum TaskSortBy
 {
     Name,
@@ -36,9 +36,9 @@ public enum TaskSortBy
     CreatedDate
 }
 
-/// <summary>
-/// Sort direction
-/// </summary>
+
+
+
 public enum SortDirection
 {
     Ascending,

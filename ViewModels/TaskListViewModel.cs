@@ -10,9 +10,9 @@ using YoteiTasks.Models;
 
 namespace YoteiTasks.ViewModels;
 
-/// <summary>
-/// ViewModel for task list with filtering and sorting
-/// </summary>
+
+
+
 public class TaskListViewModel : INotifyPropertyChanged
 {
     private readonly Graph _graph;
@@ -192,7 +192,7 @@ public class TaskListViewModel : INotifyPropertyChanged
     {
         var filtered = _tasks.AsEnumerable();
 
-        // Search text filter
+        
         if (!string.IsNullOrWhiteSpace(_searchText))
         {
             filtered = filtered.Where(t => 
@@ -200,32 +200,32 @@ public class TaskListViewModel : INotifyPropertyChanged
                 (t.Payload?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false));
         }
 
-        // Status text filter
+        
         if (!string.IsNullOrWhiteSpace(_statusFilter))
         {
             filtered = filtered.Where(t => 
                 t.StatusText.Contains(_statusFilter, StringComparison.OrdinalIgnoreCase));
         }
 
-        // Status filter
+        
         if (_selectedStatus != null)
         {
             filtered = filtered.Where(t => t.Status == _selectedStatus.Value);
         }
 
-        // Priority filter
+        
         if (_selectedPriority != null)
         {
             filtered = filtered.Where(t => t.Priority == _selectedPriority.Value);
         }
 
-        // Performer filter
+        
         if (_selectedPerformer != null)
         {
             filtered = filtered.Where(t => t.PerformerId == _selectedPerformer.Id.ToString());
         }
 
-        // Date range filter
+        
         if (_dateFrom != null)
         {
             filtered = filtered.Where(t => t.Deadline >= _dateFrom.Value);
@@ -236,7 +236,7 @@ public class TaskListViewModel : INotifyPropertyChanged
             filtered = filtered.Where(t => t.Deadline <= _dateTo.Value);
         }
 
-        // Apply sorting
+        
         filtered = _sortBy switch
         {
             TaskSortBy.Name => _sortDirection == SortDirection.Ascending 
@@ -298,9 +298,9 @@ public class TaskListViewModel : INotifyPropertyChanged
     }
 }
 
-/// <summary>
-/// ViewModel for individual task in the list
-/// </summary>
+
+
+
 public class TaskListItemViewModel : INotifyPropertyChanged
 {
     private readonly GraphNode _node;

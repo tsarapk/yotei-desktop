@@ -5,9 +5,9 @@ using YoteiLib.Core;
 
 namespace YoteiTasks.Models;
 
-/// <summary>
-/// Represents resource usage in a task
-/// </summary>
+
+
+
 public class TaskResourceUsage : INotifyPropertyChanged
 {
     private Resource _resource;

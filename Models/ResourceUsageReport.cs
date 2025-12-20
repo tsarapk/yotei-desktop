@@ -4,9 +4,9 @@ using YoteiLib.Core;
 
 namespace YoteiTasks.Models;
 
-/// <summary>
-/// Report on resource usage across tasks
-/// </summary>
+
+
+
 public class ResourceUsageReport
 {
     public Resource Resource { get; set; }
@@ -22,9 +22,9 @@ public class ResourceUsageReport
     }
 }
 
-/// <summary>
-/// Represents allocation of a resource to a specific task
-/// </summary>
+
+
+
 public class TaskResourceAllocation
 {
     public string TaskName { get; set; } = string.Empty;
