@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 
 namespace YoteiTasks.Services;
 
@@ -71,7 +72,19 @@ public class NotificationService : INotifyPropertyChanged
             Timestamp = DateTime.Now
         };
 
-        Notifications.Add(notification);
+        void AddNotification()
+        {
+            Notifications.Add(notification);
+        }
+
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            AddNotification();
+        }
+        else
+        {
+            Dispatcher.UIThread.Post(AddNotification);
+        }
 
         
         Task.Delay(durationMs).ContinueWith(_ =>

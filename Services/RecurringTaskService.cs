@@ -27,6 +27,11 @@ public class RecurringTaskService : IDisposable
         
         _checkTimer = new Timer(CheckTasks, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
     }
+    
+    /// <summary>
+    /// Делегат для выполнения сброса на главном UI-потоке (назначается из ViewModel)
+    /// </summary>
+    public Action<string>? MainThreadReset { get; set; }
     public void ConfigureRecurringTask(string nodeId, RecurringTaskConfig config)
     {
         lock (_lock)
@@ -217,6 +222,17 @@ public class RecurringTaskService : IDisposable
                     Console.WriteLine($"  - 🔔 Отправка уведомления для задачи: NodeId={nodeId}");
                     SendNotification(nodeId, config);
                     config.LastNotification = now;
+                }
+
+                // Также проверяем автосбросы, если приложение открыто
+                if (config.AutoReset && config.AutoResetDelay.HasValue && config.LastReset.HasValue)
+                {
+                    var shouldReset = now >= config.LastReset.Value + config.AutoResetDelay.Value;
+                    if (shouldReset && MainThreadReset != null)
+                    {
+                        // Запрашиваем сброс на UI-потоке через делегат
+                        MainThreadReset(nodeId);
+                    }
                 }
             }
         }

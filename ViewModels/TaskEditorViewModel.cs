@@ -10,6 +10,7 @@ using Avalonia.Controls.Primitives;
 using YoteiLib.Core;
 using YoteiTasks.Adapters;
 using YoteiTasks.Models;
+using YoteiTasks.Services;
 using YoteiTasks.ViewModels;
 
 namespace YoteiTasks.ViewModels;
@@ -520,7 +521,8 @@ public class TaskEditorViewModel : INotifyPropertyChanged
             else if (result == Result.ThereAreUncompletedTasks && uncompleted != null && uncompleted.Count > 0)
             {
                 Console.WriteLine($"❌ Нельзя завершить задачу '{_node.TaskNode.Title}'");
-                Console.WriteLine($"Сначала необходимо выполнить следующие задачи ({uncompleted.Count}):");
+                NotificationService.Instance.ShowError($"Сначала необходимо выполнить предыдущие задачи ({uncompleted.Count})");
+      
                 
                 // Получаем названия незавершенных задач
                 var uncompletedTasks = new List<string>();
@@ -539,7 +541,7 @@ public class TaskEditorViewModel : INotifyPropertyChanged
                 
                 foreach (var taskInfo in uncompletedTasks)
                 {
-                    Console.WriteLine(taskInfo);
+                    NotificationService.Instance.ShowError(taskInfo);
                 }
             }
             else if (result == Result.WrongActor)
